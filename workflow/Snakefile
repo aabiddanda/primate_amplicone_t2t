@@ -1,0 +1,34 @@
+#!python3
+
+import numpy as np
+import pandas as pd
+configfile: "config.yaml"
+
+
+rule all:
+    input:
+        []
+
+
+rule generate_ref_specific_mappability:
+    """Generate reference-specific mappability metrics for AmpliCONE."""
+    input:
+        ref_fasta = lambda wildcards: config[wildcards.species]["fasta"]
+    output:
+        ref_fasta = "results/{species}/ref.fa",
+        gem_index = "results/{species}/ref.fa.gem",
+        mappability = "results/{species}/ref.mappability",
+        mappability_wig = "results/{species}/ref.mappability.wig",
+        mappability_bed = "results/{species}/ref.mappability.bed",
+    params:
+        out_mappability = lambda wildcards: f"result/{wildcards.species}/ref",
+        out_wig = lambda wildcards: f"result/{wildcards.species}/ref.mappability"
+    
+    shell:
+       """
+       cp {input.ref_fasta} {output.ref_fasta}
+       gem-indexer -i {output.ref_fasta} -o {output.ref_fasta} --complement emulate --verbose
+       gem-mappability -I {output.gem_index} -l 101 -o {params.out_mappability} -m 2 -e 2
+       gem-2-wig -I {output.gem_index} -i {output.mappability} -o {params.out_wig} 
+       wig2bed {output.wig} {output.mappability_bed} 
+       """
