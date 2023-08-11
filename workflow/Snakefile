@@ -10,7 +10,7 @@ rule all:
         []
 
 
-rule generate_ref_specific_mappability:
+rule ref_specific_mappability:
     """Generate reference-specific mappability metrics for AmpliCONE."""
     input:
         ref_fasta = lambda wildcards: config[wildcards.species]["fasta"]
@@ -32,3 +32,22 @@ rule generate_ref_specific_mappability:
        gem-2-wig -I {output.gem_index} -i {output.mappability} -o {params.out_wig} 
        wig2bed {output.wig} {output.mappability_bed} 
        """
+
+rule ref_specific_repeatmasker:
+    """Obtain reference-specific repeatmasker output."""
+    pass
+
+
+
+rule ref_specific_tandemrepeat:
+    """Obtain reference-specific tandem repeat output."""
+
+
+
+
+
+
+
+
+
+
