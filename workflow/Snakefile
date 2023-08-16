@@ -2,52 +2,73 @@
 
 import numpy as np
 import pandas as pd
+
+
 configfile: "config.yaml"
 
 
 rule all:
     input:
-        []
+        expand("results/{species}/ref.mappability.bed", species=list(config.keys())[0]),
+
+
+rule download_fasta_fastaidx:
+    """Download fasta file from remote repositories. """
+    output:
+        fasta="results/{species}/ref.fasta.gz",
+        faidx="results/{species}/ref.fasta.gzi",
+    params:
+        fasta=lambda wildcards: config[wildcards.species]["fasta"],
+        faidx=lambda wildcards: config[wildcards.species]["faidx"],
+    shell:
+        """
+        wget {params.fasta} -O {output.fasta}
+        wget {params.faidx} -O {output.faidx} 
+        """
 
 
 rule ref_specific_mappability:
     """Generate reference-specific mappability metrics for AmpliCONE."""
     input:
-        ref_fasta = lambda wildcards: config[wildcards.species]["fasta"]
+        ref_fasta="results/{species}/ref.fasta.gz",
     output:
-        ref_fasta = "results/{species}/ref.fa",
-        gem_index = "results/{species}/ref.fa.gem",
-        mappability = "results/{species}/ref.mappability",
-        mappability_wig = "results/{species}/ref.mappability.wig",
-        mappability_bed = "results/{species}/ref.mappability.bed",
+        ref_fasta=temp("results/{species}/ref.fa"),
+        gem_index="results/{species}/ref.fa.gem",
+        mappability="results/{species}/ref.mappability",
+        mappability_wig="results/{species}/ref.mappability.wig",
+        mappability_bed="results/{species}/ref.mappability.bed",
     params:
-        out_mappability = lambda wildcards: f"result/{wildcards.species}/ref",
-        out_wig = lambda wildcards: f"result/{wildcards.species}/ref.mappability"
-    
+        out_mappability=lambda wildcards: f"result/{wildcards.species}/ref",
+        out_wig=lambda wildcards: f"result/{wildcards.species}/ref.mappability",
+    threads: 16
     shell:
-       """
-       cp {input.ref_fasta} {output.ref_fasta}
+        """
+       zcat {input.ref_fasta} > {output.ref_fasta}
        gem-indexer -i {output.ref_fasta} -o {output.ref_fasta} --complement emulate --verbose
-       gem-mappability -I {output.gem_index} -l 101 -o {params.out_mappability} -m 2 -e 2
+       gem-mappability -I {output.gem_index} -l 101 -o {output.ref_fasta} -m 2 -e 2 -T {threads}
        gem-2-wig -I {output.gem_index} -i {output.mappability} -o {params.out_wig} 
-       wig2bed {output.wig} {output.mappability_bed} 
+       wig2bed {output.mappability_wig} {output.mappability_bed} 
        """
+
 
 rule ref_specific_repeatmasker:
     """Obtain reference-specific repeatmasker output."""
-    pass
+    input:
+        ref_fasta=lambda wildcards: config[wildcards.species]["fasta"],
+    output:
+        repeatmasker="results/{species}/ref.repeatmasker.out",
+    shell:
+        "RepeatMasker {input.ref_fasta}"
 
 
-
-rule ref_specific_tandemrepeat:
-    """Obtain reference-specific tandem repeat output."""
-
-
-
-
-
-
-
-
-
-
+# rule ref_specific_tandemrepeat:
+# """Obtain reference-specific tandem repeat output."""
+# input:
+# ref_fasta = lambda wildcards: config[wildcards.species]["fasta"]
+# output:
+# tandem_repeat_dat = "results/{species}/ref.repeatmasker.dat"
+# shell:
+# "trf"
+# rule tandemrepeat2bed:
+# """Convert tandem-repeat output to bed-output as well."""
+# pass

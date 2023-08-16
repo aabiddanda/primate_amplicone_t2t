@@ -1,6 +1,18 @@
-humans:
-  fasta: ""
-gorilla:
-  fasta: ""
-chimpanzee: 
-  fasta: ""
+mGorGor1_gorilla:
+  fasta: "https://genomeark.s3.amazonaws.com/species/Gorilla_gorilla/mGorGor1/assembly_verkko_1.1-0.2-freeze/mGorGor1.chrXY.20221111.fasta.gz"
+  faidx: "https://genomeark.s3.amazonaws.com/species/Gorilla_gorilla/mGorGor1/assembly_verkko_1.1-0.2-freeze/mGorGor1.chrXY.20221111.fasta.gz.gzi"
+mPanPan1_bonobo: 
+  fasta: "https://genomeark.s3.amazonaws.com/species/Pan_paniscus/mPanPan1/assembly_verkko_1.1-0.1-freeze/mPanPan1.chrXY.20221111.fasta.gz"
+  faidx: "https://genomeark.s3.amazonaws.com/species/Pan_paniscus/mPanPan1/assembly_verkko_1.1-0.1-freeze/mPanPan1.chrXY.20221111.fasta.gz.gzi"
+mPanTro3_chimp:
+  fasta: "https://genomeark.s3.amazonaws.com/species/Pan_troglodytes/mPanTro3/assembly_verkko_1.1-hic-freeze/mPanTro3.chrXY.20221111.fasta.gz"
+  faidx: "https://genomeark.s3.amazonaws.com/species/Pan_troglodytes/mPanTro3/assembly_verkko_1.1-hic-freeze/mPanTro3.chrXY.20221111.fasta.gz.gzi"
+mPonAbel_orangutan_sumatra:
+  fasta: "https://genomeark.s3.amazonaws.com/species/Pongo_abelii/mPonAbe1/assembly_verkko_1.1-hic-freeze/mPonAbe1.chrXY.20221111.fasta.gz"
+  faidx: "https://genomeark.s3.amazonaws.com/species/Pongo_abelii/mPonAbe1/assembly_verkko_1.1-hic-freeze/mPonAbe1.chrXY.20221111.fasta.gz.gzi"
+mPonPyg2_orangutan_borneo:
+  fasta: "https://genomeark.s3.amazonaws.com/species/Pongo_pygmaeus/mPonPyg2/assembly_verkko_1.1-hic-freeze/mPonPyg2.chrXY.20221111.fasta.gz"
+  faidx: "https://genomeark.s3.amazonaws.com/species/Pongo_pygmaeus/mPonPyg2/assembly_verkko_1.1-hic-freeze/mPonPyg2.chrXY.20221111.fasta.gz.gzi"
+mHomSapChm13_homo_sapien:
+  fasta: "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz"
+  faidx: "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz.gzi"
