@@ -9,7 +9,10 @@ configfile: "config.yaml"
 
 rule all:
     input:
-        expand("results/{species}/ref.mappability.bed", species=list(config.keys())[0]),
+        expand(
+            "results/{species}/ref.chrY.mappability.bed",
+            species=list(config.keys())[:2],
+        ),
 
 
 rule download_fasta_fastaidx:
@@ -20,6 +23,9 @@ rule download_fasta_fastaidx:
     params:
         fasta=lambda wildcards: config[wildcards.species]["fasta"],
         faidx=lambda wildcards: config[wildcards.species]["faidx"],
+    resources:
+        time="0:30:00",
+        mem_mb="5G",
     shell:
         """
         wget {params.fasta} -O {output.fasta}
@@ -32,22 +38,26 @@ rule ref_specific_mappability:
     input:
         ref_fasta="results/{species}/ref.fasta.gz",
     output:
-        ref_fasta=temp("results/{species}/ref.fa"),
-        gem_index="results/{species}/ref.fa.gem",
-        mappability="results/{species}/ref.mappability",
-        mappability_wig="results/{species}/ref.mappability.wig",
-        mappability_bed="results/{species}/ref.mappability.bed",
+        ref_fasta="results/{species}/ref.chrY.fa",
+        gem_index="results/{species}/ref.chrY.fa.gem",
+        mappability="results/{species}/ref.chrY.mappability",
+        mappability_bg=temp("results/{species}/ref.chrY.mappability.bg"),
+        mappability_bed="results/{species}/ref.chrY.mappability.bed",
+    resources:
+        time="3:00:00",
+        mem_mb="10G",
     params:
-        out_mappability=lambda wildcards: f"result/{wildcards.species}/ref",
-        out_wig=lambda wildcards: f"result/{wildcards.species}/ref.mappability",
+        out_mappability=lambda wildcards: f"result/{wildcards.species}/ref.chrY",
+        out_wig=lambda wildcards: f"result/{wildcards.species}/ref.chrY.mappability",
+        read_size=lambda wildcards: config[wildcards.species]["readsize"],
     threads: 16
     shell:
         """
-       zcat {input.ref_fasta} > {output.ref_fasta}
-       gem-indexer -i {output.ref_fasta} -o {output.ref_fasta} --complement emulate --verbose
-       gem-mappability -I {output.gem_index} -l 101 -o {output.ref_fasta} -m 2 -e 2 -T {threads}
-       gem-2-wig -I {output.gem_index} -i {output.mappability} -o {params.out_wig} 
-       wig2bed {output.mappability_wig} {output.mappability_bed} 
+       samtools faidx {input.ref_fasta} chrY > {output.ref_fasta}
+       gem-indexer -i {output.ref_fasta} -o {output.ref_fasta} --complement emulate -T {threads} --verbose
+       gem-mappability -I {output.gem_index} -l {params.read_size} -o {output.ref_fasta} -m 2 -e 2 -T {threads}
+       gem-2-bed mappability -I {output.gem_index} -i {output.mappability} -o {params.out_wig}
+       cp {output.mappability_bg} {output.mappability_bed}
        """
 
 
