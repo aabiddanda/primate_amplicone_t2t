@@ -11,7 +11,7 @@ rule all:
     input:
         expand(
             "results/{species}/ref.chrY.mappability.bed",
-            species=list(config.keys())[:2],
+            species=list(config.keys())[1],
         ),
 
 
@@ -47,15 +47,14 @@ rule ref_specific_mappability:
         time="3:00:00",
         mem_mb="10G",
     params:
-        out_mappability=lambda wildcards: f"result/{wildcards.species}/ref.chrY",
-        out_wig=lambda wildcards: f"result/{wildcards.species}/ref.chrY.mappability",
+        out_wig=lambda wildcards: f"results/{wildcards.species}/ref.chrY",
         read_size=lambda wildcards: config[wildcards.species]["readsize"],
-    threads: 16
+    threads: 24
     shell:
         """
        samtools faidx {input.ref_fasta} chrY > {output.ref_fasta}
        gem-indexer -i {output.ref_fasta} -o {output.ref_fasta} --complement emulate -T {threads} --verbose
-       gem-mappability -I {output.gem_index} -l {params.read_size} -o {output.ref_fasta} -m 2 -e 2 -T {threads}
+       gem-mappability -I {output.gem_index} -l {params.read_size} -o {params.out_wig} -m 2 -e 2 -T {threads}
        gem-2-bed mappability -I {output.gem_index} -i {output.mappability} -o {params.out_wig}
        cp {output.mappability_bg} {output.mappability_bed}
        """
