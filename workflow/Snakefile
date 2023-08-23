@@ -10,8 +10,9 @@ configfile: "config.yaml"
 rule all:
     input:
         expand(
-            "results/{species}/ref.chrY.mappability.bed",
-            species=list(config.keys()),
+            "results/{species}/ref.chrY.{feature}.bed",
+            feature=["trf", "mappability"],
+            species=list(config.keys())[0],
         ),
 
 
@@ -78,13 +79,33 @@ rule ref_specific_tandemrepeat:
     NOTE: this is just using the default 
     """
     input:
-        fasta="results/{species}/ref.chrY.fa"
+        fasta="results/{species}/ref.chrY.fa",
     output:
-        tandem_repeat_dat = "results/{species}/ref.chrY.repeatmasker.dat"
+        tandem_repeat_dat="results/{species}/ref.chrY.trf.dat",
     shell:
         "trf {input.fasta} 2 7 7 80 10 50 500 -f -h -ngs > {output.tandem_repeat_dat}"
 
 
-# rule tandemrepeat2bed:
-# """Convert tandem-repeat output to bed-output as well."""
-# pass
+rule tandemrepeat2bed:
+    """Convert tandem-repeat output to bed-output."""
+    input:
+        tandem_repeat_dat="results/{species}/ref.chrY.trf.dat",
+    output:
+        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+    script:
+        "scripts/TRFdat_to_bed.py"
+
+
+# rule create_gene_def_file:
+# """Create gene definition file using pblat."""
+# input:
+# mappability_bed="results/{species}/ref.chrY.mappability.bed",
+# repeat_masker="results/{species}/ref.repeatmasker.out",
+# fasta="results/{species}/ref.chrY.fa",
+# tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+# seq_query = config["y_amplicon_seqs"]
+# output:
+# gene_def="results/{species}/ref.chrY.gene_definition.tab",
+# threads: 16
+# shell:
+#         "pblat {input.fasta} {input.seq_query} -t=dna -q=dna -threads={threads} {output.gene_def}"
