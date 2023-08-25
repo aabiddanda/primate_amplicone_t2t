@@ -5,14 +5,14 @@ def main():
     # Parse command line arguments
     datfile = snakemake.input["tandem_repeat_dat"]
     bedfile = snakemake.output["tandem_repeat_bed"]
-
+    chrom = "chrY"
     with open(bedfile, 'w') as bed:
-        chrom = ""
         with open(datfile, 'r') as dat:
             for line in dat:
                 splitline = line.split()
                 if line.startswith("Sequence:"):
-                    chrom = line.split()[1]
+                    pass
+                    # chrom = line.split()[1]
                 else:
                     # Catch index errors when line is blank
                     try:

@@ -12,13 +12,8 @@ rule all:
         expand(
             "results/{species}/ref.chrY.{feature}.bed",
             feature=["mappability", "trf"],
-            species=list(config.keys())[0],
+            species=list(config.keys()),
         ),
-       #  expand(
-            # "results/{species}/ref.chrY.trf.bed",
-            # c=range(1, 61),
-            # species=list(config.keys())[0],
-       #  ),
 
 
 rule download_fasta_fastaidx:
@@ -100,8 +95,8 @@ rule ref_specific_tandemrepeat:
     input:
         fasta=lambda wildcards: f"results/{wildcards.species}/split_fasta/chunk{int(wildcards.c):03d}.fa.gz",
     output:
-        tmp_fasta="results/{species}/split_fasta/chunk{c}.fa",
-        tandem_repeat_dat="results/{species}/trf/ref.chrY.chunk{c}.trf.dat",
+        tmp_fasta=temp("results/{species}/split_fasta/chunk{c}.fa"),
+        tandem_repeat_dat=temp("results/{species}/trf/ref.chrY.chunk{c}.trf.dat"),
     shell:
         "zcat {input.fasta} > {output.tmp_fasta}; trf {output.tmp_fasta} 2 7 7 80 10 50 500 -h -ngs > {output.tandem_repeat_dat}"
 
@@ -109,13 +104,14 @@ rule ref_specific_tandemrepeat:
 rule collect_trf_dat:
     """Collect TRF Dat Output."""
     input:
+        fastas=expand("results/{{species}}/split_fasta/chunk{c}.fa", c=range(1, 61)),
         trf_dats=expand(
             "results/{{species}}/trf/ref.chrY.chunk{c}.trf.dat", c=range(1, 61)
         ),
     output:
         meta_trf_dat="results/{species}/trf/ref.chrY.trf.dat",
-    shell:
-        "cat {input.tandem_repeat_dat} > {output.meta_trf_dat}"
+    script:
+        "scripts/combine_split_dat.py"
 
 
 rule tandemrepeat2bed:
