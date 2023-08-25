@@ -11,7 +11,12 @@ rule all:
     input:
         expand(
             "results/{species}/ref.chrY.{feature}.bed",
-            feature=["trf", "mappability"],
+            feature=["mappability"],
+            species=list(config.keys())[0],
+        ),
+        expand(
+            "results/{species}/trf/ref.chrY.chunk{c}.trf.bed",
+            c=range(1, 4),
             species=list(config.keys())[0],
         ),
 
@@ -73,29 +78,41 @@ rule ref_specific_repeatmasker:
         "cp {input.ref_masker} {output}"
 
 
+rule split_fasta:
+    input:
+        fasta="results/{species}/ref.chrY.fa",
+    output:
+        temp("results/{{species}}/split_fasta/chunk0{c}.fa.gz", c=range(1, 61)),
+    shell:
+        "kmcp utils split-genomes -m 1 -k 1 -n 60 -j 10 -l 0 {input.fasta} -O results/{wildcards.species}/split_fasta/"
+
+
 rule ref_specific_tandemrepeat:
     """Obtain reference-specific tandem repeat finder output.
     
     NOTE: this is just using the default 
     """
     input:
-        fasta="results/{species}/ref.chrY.fa",
+        fasta="results/{species}/split_fasta/chunk0{c}.fa.gz",
     output:
-        tandem_repeat_dat="results/{species}/ref.chrY.trf.dat",
+        tmp_fasta=temp("results/{species}/split_fasta/chunk0{c}.fa"),
+        tandem_repeat_dat="results/{species}/trf/ref.chrY.chunk{c}.trf.dat",
     shell:
-        "trf {input.fasta} 2 7 7 80 10 50 500 -f -h -ngs > {output.tandem_repeat_dat}"
+        "zcat {input.fasta} > {output.tmp_fasta}; trf {output.tmp_fasta} 2 7 7 80 10 50 500 -ngs > {output.tandem_repeat_dat}"
 
 
 rule tandemrepeat2bed:
     """Convert tandem-repeat output to bed-output."""
     input:
-        tandem_repeat_dat="results/{species}/ref.chrY.trf.dat",
+        tandem_repeat_dat="results/{species}/trf/ref.chrY.chunk{c}.trf.dat",
     output:
-        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+        tandem_repeat_bed="results/{species}/trf/ref.chrY.chunk{c}.trf.bed",
     script:
         "scripts/TRFdat_to_bed.py"
 
 
+# rule concat_trf_bed_files:
+# input:
 # rule create_gene_def_file:
 # """Create gene definition file using pblat."""
 # input:
