@@ -11,14 +11,14 @@ rule all:
     input:
         expand(
             "results/{species}/ref.chrY.{feature}.bed",
-            feature=["mappability"],
+            feature=["mappability", "trf"],
             species=list(config.keys())[0],
         ),
-        expand(
-            "results/{species}/trf/ref.chrY.chunk{c}.trf.bed",
-            c=range(1, 4),
-            species=list(config.keys())[0],
-        ),
+       #  expand(
+            # "results/{species}/ref.chrY.trf.bed",
+            # c=range(1, 61),
+            # species=list(config.keys())[0],
+       #  ),
 
 
 rule download_fasta_fastaidx:
@@ -82,9 +82,14 @@ rule split_fasta:
     input:
         fasta="results/{species}/ref.chrY.fa",
     output:
-        temp("results/{{species}}/split_fasta/chunk0{c}.fa.gz", c=range(1, 61)),
+        temp(
+            expand(
+                "results/{{species}}/split_fasta/chunk{c}.fa.gz",
+                c=[f"{x:03d}" for x in range(1, 61)],
+            )
+        ),
     shell:
-        "kmcp utils split-genomes -m 1 -k 1 -n 60 -j 10 -l 0 {input.fasta} -O results/{wildcards.species}/split_fasta/"
+        "kmcp utils split-genomes -m 1 -k 1 -n 60 -j 10 -l 0 {input.fasta} -O results/{wildcards.species}/split_fasta/ --force"
 
 
 rule ref_specific_tandemrepeat:
@@ -93,26 +98,36 @@ rule ref_specific_tandemrepeat:
     NOTE: this is just using the default 
     """
     input:
-        fasta="results/{species}/split_fasta/chunk0{c}.fa.gz",
+        fasta=lambda wildcards: f"results/{wildcards.species}/split_fasta/chunk{int(wildcards.c):03d}.fa.gz",
     output:
-        tmp_fasta=temp("results/{species}/split_fasta/chunk0{c}.fa"),
+        tmp_fasta="results/{species}/split_fasta/chunk{c}.fa",
         tandem_repeat_dat="results/{species}/trf/ref.chrY.chunk{c}.trf.dat",
     shell:
-        "zcat {input.fasta} > {output.tmp_fasta}; trf {output.tmp_fasta} 2 7 7 80 10 50 500 -ngs > {output.tandem_repeat_dat}"
+        "zcat {input.fasta} > {output.tmp_fasta}; trf {output.tmp_fasta} 2 7 7 80 10 50 500 -h -ngs > {output.tandem_repeat_dat}"
+
+
+rule collect_trf_dat:
+    """Collect TRF Dat Output."""
+    input:
+        trf_dats=expand(
+            "results/{{species}}/trf/ref.chrY.chunk{c}.trf.dat", c=range(1, 61)
+        ),
+    output:
+        meta_trf_dat="results/{species}/trf/ref.chrY.trf.dat",
+    shell:
+        "cat {input.tandem_repeat_dat} > {output.meta_trf_dat}"
 
 
 rule tandemrepeat2bed:
     """Convert tandem-repeat output to bed-output."""
     input:
-        tandem_repeat_dat="results/{species}/trf/ref.chrY.chunk{c}.trf.dat",
+        tandem_repeat_dat="results/{species}/trf/ref.chrY.trf.dat",
     output:
-        tandem_repeat_bed="results/{species}/trf/ref.chrY.chunk{c}.trf.bed",
+        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
     script:
         "scripts/TRFdat_to_bed.py"
 
 
-# rule concat_trf_bed_files:
-# input:
 # rule create_gene_def_file:
 # """Create gene definition file using pblat."""
 # input:

@@ -4,7 +4,7 @@
 def main():
     # Parse command line arguments
     datfile = snakemake.input["tandem_repeat_dat"]
-    bedfile = snakemake.input["tandem_repeat_bed"]
+    bedfile = snakemake.output["tandem_repeat_bed"]
 
     with open(bedfile, 'w') as bed:
         chrom = ""
