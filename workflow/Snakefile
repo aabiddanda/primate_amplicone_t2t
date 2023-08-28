@@ -140,25 +140,31 @@ rule isolate_chrY_seq:
         """
 
 rule obtain_canonical_sequences:
+    """Obtain the canonical sequences for each of the underlying genes."""
     input:
         amplicone_hg38_gene_def = config["hg38_gene_def"]
         region_fasta = "results/grch38_ref/amplicon_hg38.regions.fasta"
     output:
+        expand("results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta", gene=np.unique(pd.read_csv(config["hg38_gene_def"])["TYPE"].values))
+    params:
+       genes = lambda wildcards: np.unique(pd.read_csv(config["hg38_gene_def"])["TYPE"].values)
     script:
         "scripts/identify_canonical_seq.py"
 
+rule create_gene_seq_match_seq:
+    """Create gene definition file using pblat."""
+    input:
+        mappability_bed="results/{species}/ref.chrY.mappability.bed",
+        repeat_masker="results/{species}/ref.repeatmasker.out",
+        fasta="results/{species}/ref.chrY.fa",
+        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+        seq_query = "results/grch38_ref/amplicon_hg38.{gene}.fasta"
+    output:
+        gene_def="results/{species}/ref.chrY.{gene}.txt",
+    params:
+        min_match=99
+    threads: 16
+    shell:
+        "pblat {input.fasta} {input.seq_query} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} {output.gene_def}"
 
 
-# rule create_gene_def_file:
-# """Create gene definition file using pblat."""
-# input:
-# mappability_bed="results/{species}/ref.chrY.mappability.bed",
-# repeat_masker="results/{species}/ref.repeatmasker.out",
-# fasta="results/{species}/ref.chrY.fa",
-# tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
-# seq_query = config["y_amplicon_seqs"]
-# output:
-# gene_def="results/{species}/ref.chrY.gene_definition.tab",
-# threads: 16
-# shell:
-#         "pblat {input.fasta} {input.seq_query} -t=dna -q=dna -threads={threads} {output.gene_def}"

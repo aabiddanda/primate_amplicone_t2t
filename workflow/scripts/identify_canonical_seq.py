@@ -1,11 +1,6 @@
 import numpy as np 
 from pyfaidx import Fasta
 
-def obtain_canonical_seq(gene):
-    """Obtain a canonical gene sequence."""
-    pass
-
-
 def obtain_seq_qual(seq, n_penalty=0.1, lower_penalty=0.5):
     """Obtain quality score for sequence."""
     assert len(seq) > 0
@@ -46,16 +41,29 @@ def create_gene_seq_dict(fasta_fp, gene_tab_fp):
     return gene_seq_dict
 
 
+def obtain_canonical_seq(gene_seq_dict):
+    """Obtain the canonical sequence."""
+    gene_max_seq_dict = {}
+    for g in gene_seq_dict:
+        seqs = []
+        quals = []
+        for x in gene_seq_dict[g]:
+            seqs.append(gene_seq_dict[g][x]["seq"])
+            quals.append(gene_seq_dict[g][x]["qual"])
+        # Determine the maximum here score here 
+        maxidx = np.argmax(quals)
+        maxseq = seqs[maxidx]
+        gene_max_seq_dict[g] = maxseq
+    return gene_max_seq_dict
+
 if __name__ == '__main__':
     #1. Read in all of the files and create a gene-seq-dictionary
-    
+    gene_seq_dict = create_gene_seq_dict(snakemake.input["region_fasta"], snakemake.input["amplicone_hg38_gene_def"])     
     #2. Identify the highest quality sequence for a given family? (or do some kind of clique assessment across control sequences)
-
-    #3. Output independent fasta files for each of the canonical genes
-    pass
-
-
-
-
-
+    gene_max_seq_dict = obtain_canonical_seq(gene_seq_dict) 
+    #3. Output independent fasta files for each of the canonical gene sequences
+    for i,g in enumerate(snakemake.params["genes"]):
+        with open(snakemake.output[i], "w") as out:
+            out.write(f'>{g}\n')
+            out.write(f'{gene_max_seq_dict[g]}\n')
 
