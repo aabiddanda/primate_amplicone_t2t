@@ -124,6 +124,31 @@ rule tandemrepeat2bed:
         "scripts/TRFdat_to_bed.py"
 
 
+# ------- Obtain the canonical sequences for ampliconic genes from hg38 ------ # 
+rule isolate_chrY_seq:
+    """Isolate the chrY sequences from hg38. """
+    input:
+        hg38_fasta = config["hg38_fasta"],
+        amplicone_hg38_gene_def = config["hg38_gene_def"]
+    output:
+        regions_file = temp("results/grch38_ref/amplicon_hg38.regions.txt"),
+        region_fasta = "results/grch38_ref/amplicon_hg38.regions.fasta"
+    shell:
+        """
+        awk \'NR > 1 {{print \"chrY:\"$1\"-\"$2}}\'  {input.amplicone_hg38_gene_def} > {output.regions_file} 
+        samtools faidx {output.regions_file} {input.hg38_fasta} > {output.region_fasta} 
+        """
+
+rule obtain_canonical_sequences:
+    input:
+        amplicone_hg38_gene_def = config["hg38_gene_def"]
+        region_fasta = "results/grch38_ref/amplicon_hg38.regions.fasta"
+    output:
+    script:
+        "scripts/identify_canonical_seq.py"
+
+
+
 # rule create_gene_def_file:
 # """Create gene definition file using pblat."""
 # input:
