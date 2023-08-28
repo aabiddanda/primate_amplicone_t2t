@@ -1,3 +1,6 @@
+hg38_ref_data:
+  fasta: "data/hg38_ref_data/chrY.fa.gz"
+  gene_def: "data/hg38_ref_data/gene_definition_hg38.tab"
 species:
   mGorGor1_gorilla:
     fasta: "https://genomeark.s3.amazonaws.com/species/Gorilla_gorilla/mGorGor1/assembly_verkko_1.1-0.2-freeze/mGorGor1.chrXY.20221111.fasta.gz"

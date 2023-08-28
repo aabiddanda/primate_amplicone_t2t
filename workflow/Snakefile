@@ -12,7 +12,11 @@ rule all:
         expand(
             "results/{species}/ref.chrY.{feature}.bed",
             feature=["mappability", "trf"],
-            species=list(config.keys()),
+            species=list(config["species"].keys()),
+        ),
+        expand(
+            "results/{species}/ref.amplicone.chrY.gene_def.tab",
+            species=list(config["species"].keys()),
         ),
 
 
@@ -22,8 +26,8 @@ rule download_fasta_fastaidx:
         fasta="results/{species}/ref.fasta.gz",
         faidx="results/{species}/ref.fasta.gzi",
     params:
-        fasta=lambda wildcards: config[wildcards.species]["fasta"],
-        faidx=lambda wildcards: config[wildcards.species]["faidx"],
+        fasta=lambda wildcards: config["species"][wildcards.species]["fasta"],
+        faidx=lambda wildcards: config["species"][wildcards.species]["faidx"],
     resources:
         time="0:30:00",
         mem_mb="5G",
@@ -50,7 +54,7 @@ rule ref_specific_mappability:
     params:
         out_wig=lambda wildcards: f"results/{wildcards.species}/ref.chrY",
         out_wig2=lambda wildcards: f"results/{wildcards.species}/ref.chrY.mappability",
-        read_size=lambda wildcards: config[wildcards.species]["readsize"],
+        read_size=lambda wildcards: config["species"][wildcards.species]["readsize"],
     threads: 24
     shell:
         """
@@ -65,8 +69,10 @@ rule ref_specific_mappability:
 rule ref_specific_repeatmasker:
     """Obtain reference-specific repeatmasker output."""
     input:
-        ref_fasta=lambda wildcards: config[wildcards.species]["fasta"],
-        ref_masker=lambda wildcards: config[wildcards.species]["repeatMasker"],
+        ref_fasta=lambda wildcards: config["species"][wildcards.species]["fasta"],
+        ref_masker=lambda wildcards: config["species"][wildcards.species][
+            "repeatMasker"
+        ],
     output:
         repeatmasker="results/{species}/ref.repeatmasker.out",
     shell:
@@ -120,51 +126,78 @@ rule tandemrepeat2bed:
         tandem_repeat_dat="results/{species}/trf/ref.chrY.trf.dat",
     output:
         tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+    wildcard_constraints:
+        species="|".join(config["species"].keys()),
     script:
         "scripts/TRFdat_to_bed.py"
 
 
-# ------- Obtain the canonical sequences for ampliconic genes from hg38 ------ # 
+# ------- Obtain the canonical sequences for ampliconic genes from hg38 ------ #
 rule isolate_chrY_seq:
     """Isolate the chrY sequences from hg38. """
     input:
-        hg38_fasta = config["hg38_fasta"],
-        amplicone_hg38_gene_def = config["hg38_gene_def"]
+        hg38_fasta=config["hg38_ref_data"]["fasta"],
+        amplicone_hg38_gene_def=config["hg38_ref_data"]["gene_def"],
     output:
-        regions_file = temp("results/grch38_ref/amplicon_hg38.regions.txt"),
-        region_fasta = "results/grch38_ref/amplicon_hg38.regions.fasta"
+        regions_file=temp("results/grch38_ref/amplicon_hg38.regions.txt"),
+        region_fasta="results/grch38_ref/amplicon_hg38.regions.fasta",
     shell:
         """
         awk \'NR > 1 {{print \"chrY:\"$1\"-\"$2}}\'  {input.amplicone_hg38_gene_def} > {output.regions_file} 
-        samtools faidx {output.regions_file} {input.hg38_fasta} > {output.region_fasta} 
+        samtools faidx -r {output.regions_file} {input.hg38_fasta} > {output.region_fasta} 
         """
+
 
 rule obtain_canonical_sequences:
     """Obtain the canonical sequences for each of the underlying genes."""
     input:
-        amplicone_hg38_gene_def = config["hg38_gene_def"]
-        region_fasta = "results/grch38_ref/amplicon_hg38.regions.fasta"
+        amplicone_hg38_gene_def=config["hg38_ref_data"]["gene_def"],
+        region_fasta="results/grch38_ref/amplicon_hg38.regions.fasta",
     output:
-        expand("results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta", gene=np.unique(pd.read_csv(config["hg38_gene_def"])["TYPE"].values))
+        expand(
+            "results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta",
+            gene=np.unique(
+                pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")[
+            "TYPE"
+                ].values
+            ),
+        ),
     params:
-       genes = lambda wildcards: np.unique(pd.read_csv(config["hg38_gene_def"])["TYPE"].values)
+        genes=lambda wildcards: np.unique(
+            pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")["TYPE"].values
+        ),
     script:
         "scripts/identify_canonical_seq.py"
 
+
 rule create_gene_seq_match_seq:
-    """Create gene definition file using pblat."""
+    """Obtain the blast results for matching sequence."""
     input:
-        mappability_bed="results/{species}/ref.chrY.mappability.bed",
-        repeat_masker="results/{species}/ref.repeatmasker.out",
         fasta="results/{species}/ref.chrY.fa",
-        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
-        seq_query = "results/grch38_ref/amplicon_hg38.{gene}.fasta"
+        seq_query="results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta",
     output:
-        gene_def="results/{species}/ref.chrY.{gene}.txt",
+        gene_blast="results/{species}/blast/ref.chrY.{gene}.blast.txt",
     params:
-        min_match=99
+        min_match=99,
     threads: 16
     shell:
-        "pblat {input.fasta} {input.seq_query} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} {output.gene_def}"
+        "pblat {input.fasta} {input.seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9"
 
 
+rule collect_regions:
+    """Collect regions """
+    input:
+        expand(
+            "results/{{species}}/blast/ref.chrY.{gene}.blast.txt",
+            gene=np.unique(
+                pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")[
+            "TYPE"
+                ].values
+            ),
+        ),
+    output:
+        "results/{species}/ref.amplicone.chrY.gene_def.tab",
+    params:
+        min_percent_match=99,
+    shell:
+        "cat {input} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{print $9,$10,$1}}' > {output} "

@@ -7,7 +7,7 @@ def obtain_seq_qual(seq, n_penalty=0.1, lower_penalty=0.5):
     assert n_penalty < 1
     assert lower_penalty < 1 
     score = 0.0
-    for c in seq
+    for c in seq:
         if c.islower():
             score += lower_penalty
         elif c == "N":
@@ -26,16 +26,15 @@ def create_gene_seq_dict(fasta_fp, gene_tab_fp):
             [start, end, gene] =  gene_str.split()
             if gene not in gene_seq_dict:
                 gene_seq_dict[gene] = {}
-            else:
-                gene_seq_dict[gene][f'chrY:{start}-{end}']["seq"] = ""
+            gene_seq_dict[gene][f'chrY:{start}-{end}']= {}
     # Iterate through the ampliconic FASTA
     amplicon_fasta = Fasta(fasta_fp)
     for g in gene_seq_dict:
         for x in gene_seq_dict[g]:
             try:
                 cur_seq = amplicon_fasta[x]
-                gene_seq_dict[g][x]["seq"] = x[:].seq
-                gene_seq_dict[g][x]["qual"] = obtain_seq_qual(x[:].seq)
+                gene_seq_dict[g][x]["seq"] = cur_seq[:].seq
+                gene_seq_dict[g][x]["qual"] = obtain_seq_qual(cur_seq[:].seq)
             except KeyError:
                 pass
     return gene_seq_dict
