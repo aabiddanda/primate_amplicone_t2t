@@ -7,17 +7,30 @@ import pandas as pd
 configfile: "config.yaml"
 
 
+TARGETS = []
+real_species = [
+    "mPonPyg2_orangutan_borneo",
+    "mPonAbel_orangutan_sumatra",
+    "mPanTro3_chimp",
+    "mPanPan1_bonobo",
+    "mGorGor1_gorilla",
+]
+
+test_species = ["mGorGor1_gorilla"]
+for species in test_species:
+    for indiv in config["species"][species]["indivs"]:
+        TARGETS.append(
+            f"results/{species}/amplicone_results/{indiv}.Ampliconic_Summary.txt"
+        )
+
+
 rule all:
     input:
-        expand(
-            "results/{species}/ref.chrY.{feature}.bed",
-            feature=["mappability", "trf"],
-            species=["mHomSapChm13_homo_sapien"],
-        ),
-        expand(
-            "results/{species}/ref.amplicone.chrY.gene_def.tab",
-            species=["mHomSapChm13_homo_sapien"],
-        ),
+        #         expand(
+        # "results/{species}/ref.amplicone.chrY.gene_def.tab",
+        # species=["mPonPyg2_orangutan_borneo", "mPonAbel_orangutan_sumatra", "mPanTro3_chimp", "mPanPan1_bonobo", "mGorGor1_gorilla"],
+        #         ),
+        TARGETS,
 
 
 rule download_fasta_fastaidx:
@@ -69,7 +82,7 @@ rule ref_specific_mappability:
 rule ref_specific_repeatmasker:
     """Obtain reference-specific repeatmasker output."""
     input:
-        ref_fasta=lambda wildcards: config["species"][wildcards.species]["fasta"],
+        ref_fasta="results/{species}/ref.chrY.fa",
         ref_masker=lambda wildcards: config["species"][wildcards.species][
             "repeatMasker"
         ],
@@ -217,7 +230,7 @@ rule build_chrY_annotation:
         "../../tools/AmpliCoNE-tool/env.yaml"
     shell:
         """
-        sh ../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i {input.fasta} -m {input.mappability_bed} -r {input.repeatmasker} -t {input.tandem_repeat_bed}  -g {input.gene_def} -o {output.chrY_anno} 
+        sh ../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i {input.fasta} -m {input.mappability_bed} -r {input.repeatmasker} -t {input.tandem_repeat_bed}  -g {input.gene_def} -o {output.chrY_anno} 
         """
 
 
@@ -227,18 +240,20 @@ rule cram2bam:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
             wildcards.indiv
         ],
+        test_fasta=lambda wildcards: config["species"][wildcards.species]["ref_fasta"],
     output:
         bam_file="results/{species}/bam_files/{indiv}.bam",
+    threads: 16
     shell:
         """
-        samtools view -b -T {input.test_fasta} {input.cram_file} > {output.bam_file} 
+        samtools view --fast --threads {threads} -b -T {input.test_fasta} {input.cram_file} > {output.bam_file} 
         """
 
 
 rule run_amplicone_count:
-    """Run the amplicone count script."""
+    """Run the amplicone count script and generate appropriate output."""
     input:
-        bam_file="results/{species}/bam_files/{indiv}.bam",
+        bam="results/{species}/bam_files/{indiv}.bam",
         chrY_anno="results/{species}/chrY_annotation.tab",
         gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
     output:
@@ -247,7 +262,9 @@ rule run_amplicone_count:
     params:
         outfix=lambda wildcards: f"results/{wildcards.species}/amplicone_results/{wildcards.indiv}.",
         length=lambda wildcards: config["species"][wildcards.species]["length"],
+    conda:
+        "../../tools/AmpliCoNE-tool/env.yaml"
     shell:
         """
-        python AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
+        python ../tools/AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
         """
