@@ -12,11 +12,11 @@ rule all:
         expand(
             "results/{species}/ref.chrY.{feature}.bed",
             feature=["mappability", "trf"],
-            species=list(config["species"].keys()),
+            species=["mHomSapChm13_homo_sapien"],
         ),
         expand(
             "results/{species}/ref.amplicone.chrY.gene_def.tab",
-            species=list(config["species"].keys()),
+            species=["mHomSapChm13_homo_sapien"],
         ),
 
 
@@ -200,4 +200,54 @@ rule collect_regions:
     params:
         min_percent_match=99,
     shell:
-        "cat {input} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{print $9,$10,$1}}' > {output} "
+        "cat {input} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{print $9,$10,$1}}' > {output}"
+
+
+rule build_chrY_annotation:
+    """Build chrY annotation for AmpliCoNE."""
+    input:
+        gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
+        fasta="results/{species}/ref.chrY.fa",
+        tandem_repeat_bed="results/{species}/ref.chrY.trf.bed",
+        mappability_bed="results/{species}/ref.chrY.mappability.bed",
+        repeatmasker="results/{species}/ref.repeatmasker.out",
+    output:
+        chrY_anno="results/{species}/chrY_annotation.tab",
+    conda:
+        "../../tools/AmpliCoNE-tool/env.yaml"
+    shell:
+        """
+        sh ../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i {input.fasta} -m {input.mappability_bed} -r {input.repeatmasker} -t {input.tandem_repeat_bed}  -g {input.gene_def} -o {output.chrY_anno} 
+        """
+
+
+rule cram2bam:
+    """Convert a CRAM to a BAM file."""
+    input:
+        cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
+            wildcards.indiv
+        ],
+    output:
+        bam_file="results/{species}/bam_files/{indiv}.bam",
+    shell:
+        """
+        samtools view -b -T {input.test_fasta} {input.cram_file} > {output.bam_file} 
+        """
+
+
+rule run_amplicone_count:
+    """Run the amplicone count script."""
+    input:
+        bam_file="results/{species}/bam_files/{indiv}.bam",
+        chrY_anno="results/{species}/chrY_annotation.tab",
+        gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
+    output:
+        "results/{species}/amplicone_results/{indiv}.Ampliconic_Summary.txt",
+        "results/{species}/amplicone_results/{indiv}.XDG_CopyNumber.txt",
+    params:
+        outfix=lambda wildcards: f"results/{wildcards.species}/amplicone_results/{wildcards.indiv}.",
+        length=lambda wildcards: config["species"][wildcards.species]["length"],
+    shell:
+        """
+        python AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
+        """

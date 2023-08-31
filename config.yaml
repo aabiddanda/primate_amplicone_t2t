@@ -1,6 +1,6 @@
 hg38_ref_data:
   fasta: "data/hg38_ref_data/chrY.fa.gz"
-  gene_def: "data/hg38_ref_data/gene_definition_hg38.tab"
+  gene_def: "data/hg38_ref_data/gene_definition_hg38.v1.tab"
 species:
   mGorGor1_gorilla:
     fasta: "https://genomeark.s3.amazonaws.com/species/Gorilla_gorilla/mGorGor1/assembly_verkko_1.1-0.2-freeze/mGorGor1.chrXY.20221111.fasta.gz"
@@ -22,6 +22,8 @@ species:
     faidx: "https://genomeark.s3.amazonaws.com/species/Pongo_abelii/mPonAbe1/assembly_verkko_1.1-hic-freeze/mPonAbe1.chrXY.20221111.fasta.gz.gzi"
     repeatMasker: "data/repeat_masker_t2t_primates/Sumatran_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
+    samples:
+      ""
   mPonPyg2_orangutan_borneo:
     fasta: "https://genomeark.s3.amazonaws.com/species/Pongo_pygmaeus/mPonPyg2/assembly_verkko_1.1-hic-freeze/mPonPyg2.chrXY.20221111.fasta.gz"
     faidx: "https://genomeark.s3.amazonaws.com/species/Pongo_pygmaeus/mPonPyg2/assembly_verkko_1.1-hic-freeze/mPonPyg2.chrXY.20221111.fasta.gz.gzi"
