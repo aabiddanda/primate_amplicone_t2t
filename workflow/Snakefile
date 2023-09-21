@@ -59,7 +59,7 @@ rule ref_specific_mappability:
         ref_fasta="results/{species}/ref.chrY.fa",
         gem_index="results/{species}/ref.chrY.fa.gem",
         mappability="results/{species}/ref.chrY.mappability",
-        mappability_bg=temp("results/{species}/ref.chrY.mappability.bg"),
+        mappability_bg="results/{species}/ref.chrY.mappability.bg",
         mappability_bed="results/{species}/ref.chrY.mappability.bed",
     resources:
         time="3:00:00",
@@ -230,6 +230,7 @@ rule build_chrY_annotation:
         "../../tools/AmpliCoNE-tool/env.yaml"
     shell:
         """
+        cp -r ../tools/AmpliCoNE-tool/bin/ .  
         sh ../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i {input.fasta} -m {input.mappability_bed} -r {input.repeatmasker} -t {input.tandem_repeat_bed}  -g {input.gene_def} -o {output.chrY_anno} 
         """
 
