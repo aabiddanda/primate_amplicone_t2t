@@ -160,7 +160,7 @@ rule create_gene_seq_match_seq:
     threads: 16
     shell:
         """
-        seqkit grep -i -r -p '{wildcards.gene}' -o {output.gene_seq_query} 
+        seqkit grep -i -r -p '{wildcards.gene}' {input.seq_query} -o {output.gene_seq_query} 
         pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
         """
 
