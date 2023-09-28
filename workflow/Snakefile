@@ -149,9 +149,11 @@ rule create_gene_seq_match_seq:
     """Obtain the blast results for matching sequence."""
     input:
         fasta="results/{species}/ref.chrY.fa",
-        seq_query="data/canonical_seq_amplicon/{species}.ampliconic.fa",
+        seq_query=lambda wildcards: config["species"][wildcards.species][
+            "ampliconic_seq"
+        ],
     output:
-        gene_fasta="results/{species}/blast/ref.chrY.ampliconic.{gene}.fa",
+        gene_seq_query="results/{species}/blast/ref.chrY.ampliconic.{gene}.fa",
         gene_blast="results/{species}/blast/ref.chrY.{gene}.blast.txt",
     params:
         min_match=99,
@@ -175,12 +177,9 @@ def get_gene_list(fasta_fp):
 rule collect_regions:
     """Collect sampled blasted regions for amplicone."""
     input:
-        gene_list="results/{species}/ampliconic_genes.txt",
         blast_results=lambda wildcards: expand(
             "results/{{species}}/blast/ref.chrY.{gene}.blast.txt",
-            gene=get_gene_list(
-            f"../data/canonical_seq_amplicon/{wildcards.species}.ampliconic.fa"
-            ),
+            gene=get_gene_list(config["species"][wildcards.species]["ampliconic_seq"]),
         ),
     output:
         "results/{species}/ref.amplicone.chrY.gene_def.tab",
