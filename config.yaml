@@ -22,6 +22,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Bonobo_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 46925665
+    ampliconic_seq: "data/canonical_seq_amplicon/mPanPan1_bonobo.amplicon.fa"
     ref_fasta: "/scratch16/rmccoy22/abiddan1/t2t_primates_analyses/reference_data/ref/Bonobo/mPanPan1.fa"
     indivs:
       Bono: "/data/mschatz1/qiuhuili/project/primate/files/cram/Bono/T2T.cram"
@@ -32,6 +33,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Gorilla_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 36445859
+    ampliconic_seq: "data/canonical_seq_amplicon/mPanTro3_chimp.amplicon.fa"
     ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/chimpanzee/mPanTro3.fa"
     indivs:
       Akwaya-Jean: "/data/mschatz1/qiuhuili/project/primate/files/cram/Akwaya-Jean/T2T.cram"

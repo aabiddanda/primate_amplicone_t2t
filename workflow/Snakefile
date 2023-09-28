@@ -7,6 +7,7 @@ import pandas as pd
 configfile: "config.yaml"
 
 
+# -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
     "mPonPyg2_orangutan_borneo",
@@ -16,7 +17,7 @@ real_species = [
     "mGorGor1_gorilla",
 ]
 
-test_species = ["mGorGor1_gorilla"]
+test_species = ["mPanPan1_bonobo"]
 for species in test_species:
     for indiv in config["species"][species]["indivs"]:
         TARGETS.append(
@@ -26,10 +27,6 @@ for species in test_species:
 
 rule all:
     input:
-        #         expand(
-        # "results/{species}/ref.amplicone.chrY.gene_def.tab",
-        # species=["mPonPyg2_orangutan_borneo", "mPonAbel_orangutan_sumatra", "mPanTro3_chimp", "mPanPan1_bonobo", "mGorGor1_gorilla"],
-        #         ),
         TARGETS,
 
 
@@ -145,67 +142,44 @@ rule tandemrepeat2bed:
         "scripts/TRFdat_to_bed.py"
 
 
-# ------- Obtain the canonical sequences for ampliconic genes from hg38 ------ #
-rule isolate_chrY_seq:
-    """Isolate the chrY sequences from hg38. """
-    input:
-        hg38_fasta=config["hg38_ref_data"]["fasta"],
-        amplicone_hg38_gene_def=config["hg38_ref_data"]["gene_def"],
-    output:
-        regions_file=temp("results/grch38_ref/amplicon_hg38.regions.txt"),
-        region_fasta="results/grch38_ref/amplicon_hg38.regions.fasta",
-    shell:
-        """
-        awk \'NR > 1 {{print \"chrY:\"$1\"-\"$2}}\'  {input.amplicone_hg38_gene_def} > {output.regions_file} 
-        samtools faidx -r {output.regions_file} {input.hg38_fasta} > {output.region_fasta} 
-        """
-
-
-rule obtain_canonical_sequences:
-    """Obtain the canonical sequences for each of the underlying genes."""
-    input:
-        amplicone_hg38_gene_def=config["hg38_ref_data"]["gene_def"],
-        region_fasta="results/grch38_ref/amplicon_hg38.regions.fasta",
-    output:
-        expand(
-            "results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta",
-            gene=np.unique(
-                pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")[
-            "TYPE"
-                ].values
-            ),
-        ),
-    params:
-        genes=lambda wildcards: np.unique(
-            pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")["TYPE"].values
-        ),
-    script:
-        "scripts/identify_canonical_seq.py"
+# ------- Obtain the canonical sequences for ampliconic genes ------ #
 
 
 rule create_gene_seq_match_seq:
     """Obtain the blast results for matching sequence."""
     input:
         fasta="results/{species}/ref.chrY.fa",
-        seq_query="results/grch38_ref/amplicon.chrY.hg38.{gene}.fasta",
+        seq_query="data/canonical_seq_amplicon/{species}.ampliconic.fa",
     output:
+        gene_fasta="results/{species}/blast/ref.chrY.ampliconic.{gene}.fa",
         gene_blast="results/{species}/blast/ref.chrY.{gene}.blast.txt",
     params:
         min_match=99,
     threads: 16
     shell:
-        "pblat {input.fasta} {input.seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9"
+        """
+        seqkit grep -i -r -p '{wildcards.gene}' -o {output.gene_seq_query} 
+        pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
+        """
+
+
+def get_gene_list(fasta_fp):
+    genes = []
+    with open(fasta_fp, "r") as f:
+        for line in f:
+            if line[0] == ">":
+                genes.append(line.rstrip()[1:])
+    return genes
 
 
 rule collect_regions:
-    """Collect regions """
+    """Collect sampled blasted regions for amplicone."""
     input:
-        expand(
+        gene_list="results/{species}/ampliconic_genes.txt",
+        blast_results=lambda wildcards: expand(
             "results/{{species}}/blast/ref.chrY.{gene}.blast.txt",
-            gene=np.unique(
-                pd.read_csv(config["hg38_ref_data"]["gene_def"], sep="\t")[
-            "TYPE"
-                ].values
+            gene=get_gene_list(
+            f"../data/canonical_seq_amplicon/{wildcards.species}.ampliconic.fa"
             ),
         ),
     output:
@@ -213,7 +187,7 @@ rule collect_regions:
     params:
         min_percent_match=99,
     shell:
-        "cat {input} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{print $9,$10,$1}}' > {output}"
+        "cat {input.blast_results} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{print $9,$10,$1}}' > {output}"
 
 
 rule build_chrY_annotation:
