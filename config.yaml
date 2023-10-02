@@ -106,7 +106,6 @@ species:
     #repeatMasker: "data/repeat_masker_t2t_primates/Siamang_FinalAnnotations_June2023_v2.sort.out"
     #readsize: 101
 #    length: 
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Siamang/mSymSyn1.fa"
-    indivs:
+    #ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Siamang/mSymSyn1.fa"
 
 
