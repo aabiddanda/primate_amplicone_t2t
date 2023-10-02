@@ -211,7 +211,9 @@ rule build_chrY_annotation:
 
 
 rule cram2bam:
-    """Convert a CRAM to a BAM file."""
+    """Convert a CRAM to a BAM file.
+    NOTE: the bam file will only contain chrY now.
+    """
     input:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
             wildcards.indiv
@@ -222,7 +224,7 @@ rule cram2bam:
     threads: 16
     shell:
         """
-        samtools view --fast --threads {threads} -b -T {input.test_fasta} {input.cram_file} > {output.bam_file} 
+        samtools view --fast --threads {threads} -b -T {input.test_fasta} {input.cram_file} chrY > {output.bam_file} 
         """
 
 
