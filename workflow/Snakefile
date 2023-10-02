@@ -17,8 +17,7 @@ real_species = [
     "mGorGor1_gorilla",
 ]
 
-test_species = ["mPanPan1_bonobo"]
-for species in test_species:
+for species in real_species:
     for indiv in config["species"][species]["indivs"]:
         TARGETS.append(
             f"results/{species}/amplicone_results/{indiv}.Ampliconic_Summary.txt"
