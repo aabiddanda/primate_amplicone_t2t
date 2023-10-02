@@ -186,7 +186,7 @@ rule collect_regions:
     params:
         min_percent_match=99,
     shell:
-        "cat {input.blast_results} | grep -v \"#\" | awk ' $3 > {params.min_percent_match} {{OFS=\"\t\";print $9,$10,$1}}' > {output}"
+        'cat {input.blast_results} | grep -v "#" | awk \' $3 > {params.min_percent_match} {{OFS="\t";print $9,$10,$1}}\' > {output}'
 
 
 rule build_chrY_annotation:
@@ -216,7 +216,7 @@ rule cram2bam:
         ],
         test_fasta=lambda wildcards: config["species"][wildcards.species]["ref_fasta"],
     output:
-        bam_file="results/{species}/bam_files/{indiv}.bam",
+        bam_file=temp("results/{species}/bam_files/{indiv}.bam"),
     threads: 16
     shell:
         """
