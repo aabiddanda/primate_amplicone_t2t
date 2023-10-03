@@ -220,11 +220,13 @@ rule cram2bam:
         ],
         test_fasta=lambda wildcards: config["species"][wildcards.species]["ref_fasta"],
     output:
-        bam_file=temp("results/{species}/bam_files/{indiv}.bam"),
+        bam_file="results/{species}/bam_files/{indiv}.bam",
+        bai_file="results/{species}/bam_files/{indiv}.bam.bai",
     threads: 16
     shell:
         """
         samtools view --fast --threads {threads} -b -T {input.test_fasta} {input.cram_file} chrY > {output.bam_file} 
+        samtools index -@{threads} {output.bam_file}
         """
 
 
@@ -244,5 +246,5 @@ rule run_amplicone_count:
         "../../tools/AmpliCoNE-tool/env.yaml"
     shell:
         """
-        python ../tools/AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
+        python ../tools/AmpliCoNE-tool/AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
         """
