@@ -8,6 +8,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Gorilla_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 65269191
+    ampliconic_seq: "data/canonical_seq_amplicon/mGorGor1_gorilla.amplicon.fa"
     ref_fasta: "/scratch16/rmccoy22/abiddan1/t2t_primates_analyses/reference_data/ref/Gorilla/mGorGor1.fa"
     indivs:
       Abe: "/data/mschatz1/qiuhuili/project/primate/files/cram/Abe/T2T.cram"
@@ -22,6 +23,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Bonobo_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 46925665
+    ampliconic_seq: "data/canonical_seq_amplicon/mPanPan1_bonobo.amplicon.fa"
     ref_fasta: "/scratch16/rmccoy22/abiddan1/t2t_primates_analyses/reference_data/ref/Bonobo/mPanPan1.fa"
     indivs:
       Bono: "/data/mschatz1/qiuhuili/project/primate/files/cram/Bono/T2T.cram"
@@ -32,6 +34,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Gorilla_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 36445859
+    ampliconic_seq: "data/canonical_seq_amplicon/mPanTro3_chimp.amplicon.fa"
     ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/chimpanzee/mPanTro3.fa"
     indivs:
       Akwaya-Jean: "/data/mschatz1/qiuhuili/project/primate/files/cram/Akwaya-Jean/T2T.cram"
@@ -61,8 +64,9 @@ species:
     faidx: "https://genomeark.s3.amazonaws.com/species/Pongo_abelii/mPonAbe1/assembly_verkko_1.1-hic-freeze/mPonAbe1.chrXY.20221111.fasta.gz.gzi"
     repeatMasker: "data/repeat_masker_t2t_primates/Sumatran_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Sumatran/mPonAbe1.fa"
     length: 67808326
+    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Sumatran/mPonAbe1.fa"
+    ampliconic_seq: "data/canonical_seq_amplicon/mPonAbel_orangutan_sumatra.amplicon.fa"
     indivs:
       Buschi: "/data/mschatz1/qiuhuili/project/primate/files/cram/Buschi/T2T.cram"
   mPonPyg2_orangutan_borneo:
@@ -72,6 +76,7 @@ species:
     readsize: 101
     length: 49349692
     ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Bornean/mPonPyg2.fa"
+    ampliconic_seq: "data/canonical_seq_amplicon/mPonPyg2_orangutan_borneo.amplicon.fa"
     indivs:
       Napoleon: "/data/mschatz1/qiuhuili/project/primate/files/cram/Napoleon/T2T.cram"
   mHomSapChm13_homo_sapien:
@@ -80,4 +85,29 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/CHM13v2.0_XY_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 62460029
+    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/CHM13/chm13v2.0.fa"
+    indivs:
+      HG00448: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG00448.cram"
+      HG01619: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01619.cram"
+      HG01621: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG1621.cram"
+      HG01708: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01708.cram"
+      HG01771: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01771.cram"
+      HG02070: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG02070.cram"
+      HG02521: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG02521.cram"
+      HG02768: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG025768.cram"
+      HG03120: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03120.cram"
+      HG03122: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03122.cram"
+      HG03246: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03246.cram"
+      HG03248: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03248.cram"
+      HG03307: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03307.cram"
+      HG03308: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03308.cram"
+
+#  mSymSyn1_siamang gibbon:
+    #fasta: "https://genomeark.s3.amazonaws.com/species/Symphalangus_syndactylus/mSymSyn1/assembly_verkko_1.1-hic-freeze/mSymSyn1.chrXY.20221111.fasta.gz"
+    #faidx: "https://genomeark.s3.amazonaws.com/species/Symphalangus_syndactylus/mSymSyn1/assembly_verkko_1.1-hic-freeze/mSymSyn1.chrXY.20221111.fasta.gz.gzi"
+    #repeatMasker: "data/repeat_masker_t2t_primates/Siamang_FinalAnnotations_June2023_v2.sort.out"
+    #readsize: 101
+#    length: 
+    #ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Siamang/mSymSyn1.fa"
+
 
