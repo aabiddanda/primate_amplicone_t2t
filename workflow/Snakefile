@@ -203,8 +203,8 @@ rule build_chrY_annotation:
     shell:
         """
         cd results/{wildcards.species}/
-        cp -r ../../../tools/AmpliCoNE-tool/bin/ .  
-        sh ../../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i ref.chrY.fa -m ref.chrY.mappability.bed -r ref.repeatmasker.out -t ref.chrY.trf.bed -g ref.amplicone.chrY.gene_def.tab   -o chrY_annotation.tab 
+        cp -rf ../../../tools/AmpliCoNE-tool/bin/ .  
+        sh ../../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i ref.chrY.fa -m ref.chrY.mappability.bed -r ref.repeatmasker.out -t ref.chrY.trf.bed -g ref.amplicone.chrY.gene_def.tab -o chrY_annotation.tab 
         rm *.sam
         cd ../../
         """
