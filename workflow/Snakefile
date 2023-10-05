@@ -174,22 +174,32 @@ def get_gene_list(fasta_fp):
 
 
 rule collect_regions:
-    """Collect sampled blasted regions for amplicone."""
+    """Collect sampled blasted regions for amplicone.
+    
+    NOTE: this will also match very small sequences
+    """
     input:
         blast_results=lambda wildcards: expand(
             "results/{{species}}/blast/ref.chrY.{gene}.blast.txt",
             gene=get_gene_list(config["species"][wildcards.species]["ampliconic_seq"]),
         ),
     output:
-        "results/{species}/ref.amplicone.chrY.gene_def.tab",
+        gene_def_bed = "results/{species}/ref.amplicone.chrY.gene_def.bed",
+        gene_def_tab = "results/{species}/ref.amplicone.chrY.gene_def.tab",
     params:
         min_percent_match=99,
+        min_alignment_length=100
     shell:
-        'cat {input.blast_results} | grep -v "#" | awk \' $3 > {params.min_percent_match} {{OFS="\t";print $9,$10,$1}}\' > {output}'
+        '''
+        cat {input.blast_results} | awk \'$3 > 99 && $4 > 100\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.gene_def_bed}
+        awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}}\' {output.gene_def_bed}  > {output.gene_def_tab}
+        '''
 
 
 rule build_chrY_annotation:
-    """Build chrY annotation for AmpliCoNE."""
+    """Build chrY annotation for AmpliCoNE.
+    NOTE: we do all this copying since the paths in the scripts are hard-coded. 
+    """
     input:
         gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
         fasta="results/{species}/ref.chrY.fa",
