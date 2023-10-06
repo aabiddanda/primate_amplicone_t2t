@@ -142,8 +142,6 @@ rule tandemrepeat2bed:
 
 
 # ------- Obtain the canonical sequences for ampliconic genes ------ #
-
-
 rule create_gene_seq_match_seq:
     """Obtain the blast results for matching sequence."""
     input:
@@ -163,6 +161,24 @@ rule create_gene_seq_match_seq:
         pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
         """
 
+rule create_contro_seq_match_seq:
+    """Obtain the blast results for matching sequence in the control sequences."""
+    input:
+        fasta="results/{species}/ref.chrY.fa",
+        seq_query=lambda wildcards: config["species"][wildcards.species][
+            "control_seq"
+        ],
+    output:
+        gene_seq_query="results/{species}/blast/ref.chrY.control.{gene}.fa",
+        gene_blast="results/{species}/blast/ref.chrY.control.{gene}.blast.txt",
+    params:
+        min_match=99,
+    threads: 16
+    shell:
+        """
+        seqkit grep -i -r -p '{wildcards.gene}' {input.seq_query} -o {output.gene_seq_query} 
+        pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
+        """
 
 def get_gene_list(fasta_fp):
     genes = []
@@ -173,10 +189,10 @@ def get_gene_list(fasta_fp):
     return genes
 
 
-rule collect_regions:
+rule collect_ampliconic_regions:
     """Collect sampled blasted regions for amplicone.
     
-    NOTE: this will also match very small sequences
+    NOTE: We now 1) account for at least 100 bp to be in the alignment and 2) we merge the intervals
     """
     input:
         blast_results=lambda wildcards: expand(
@@ -185,16 +201,47 @@ rule collect_regions:
         ),
     output:
         gene_def_bed = "results/{species}/ref.amplicone.chrY.gene_def.bed",
-        gene_def_tab = "results/{species}/ref.amplicone.chrY.gene_def.tab",
+        # gene_def_tab = "results/{species}/ref.amplicone.chrY.gene_def.tab",
     params:
         min_percent_match=99,
         min_alignment_length=100
     shell:
         '''
         cat {input.blast_results} | awk \'$3 > 99 && $4 > 100\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.gene_def_bed}
-        awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}}\' {output.gene_def_bed}  > {output.gene_def_tab}
+        '''
+# awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}}\' {output.gene_def_bed}  > {output.gene_def_tab}
+
+rule collect_control_regions:
+    """Collect sampled control gene regions for amplicone.
+    
+    NOTE: We now 1) account for at least 100 bp to be in the alignment and 2) we merge the intervals
+    """
+    input:
+        blast_results=lambda wildcards: expand(
+            "results/{{species}}/blast/ref.chrY.control.{gene}.blast.txt",
+            gene=get_gene_list(config["species"][wildcards.species]["control_seq"]),
+        ),
+    output:
+        control_def_raw_bed = "results/{species}/ref.amplicone.chrY.control_def.raw.bed",
+        control_def_bed = "results/{species}/ref.amplicone.chrY.control_def.bed",
+    params:
+        min_percent_match=99,
+        min_alignment_length=100
+    shell:
+        '''
+        cat {input.blast_results} | awk \'$3 > 99 && $4 > 100\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_raw_bed}
+        cat {input.blast_results} | awk \'$3 > 99 && $4 > 100\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", \"CONTROL\"}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", \"CONTROL\"}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_bed}
         '''
 
+rule create_full_gene_def_file:
+    """Helper rule that merges together the gene definition."""
+    input:
+        control_def_bed = "results/{species}/ref.amplicone.chrY.control_def.bed",
+        gene_def_bed = "results/{species}/ref.amplicone.chrY.gene_def.bed"
+    output:
+        gene_def_tab = "results/{species}/ref.amplicone.chrY.gene_def.tab",
+    shell:
+        'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}}\' {output.gene_def_bed}  > {output.gene_def_tab}'
 
 rule build_chrY_annotation:
     """Build chrY annotation for AmpliCoNE.
