@@ -10,11 +10,11 @@ configfile: "config.yaml"
 # -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
-    "mPonPyg2_orangutan_borneo",
-    "mPonAbel_orangutan_sumatra",
+    # "mPonPyg2_orangutan_borneo",
+    # "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
-    "mPanPan1_bonobo",
-    "mGorGor1_gorilla",
+    # "mPanPan1_bonobo",
+    # "mGorGor1_gorilla",
 ]
 
 for species in real_species:
@@ -151,7 +151,7 @@ rule create_gene_seq_match_seq:
         ],
     output:
         gene_seq_query="results/{species}/blast/ampliconic/ref.chrY.ampliconic.{gene}.fa",
-        gene_blast="results/{species}/blast/ampliconic/ref.chrY.{gene}.blast.txt",
+        gene_blast="results/{species}/blast/ampliconic/ref.chrY.ampliconic.{gene}.blast.txt",
     params:
         min_match=99,
     threads: 16
@@ -162,7 +162,7 @@ rule create_gene_seq_match_seq:
         """
 
 
-rule create_contro_seq_match_seq:
+rule create_control_seq_match_seq:
     """Obtain the blast results for matching sequence in the control sequences."""
     input:
         fasta="results/{species}/ref.chrY.fa",
@@ -177,6 +177,36 @@ rule create_contro_seq_match_seq:
         """
         seqkit grep -i -r -p '{wildcards.gene}' {input.seq_query} -o {output.gene_seq_query} 
         pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
+        """
+
+def get_fasta_length(fasta_fp):
+    """Get the length of the fasta sequences."""
+    seq_len = 0.0
+    with open(fasta_fp, "r") as f:
+        for line in f:
+            if line[0] != ">":
+                seq_len += len(line.rstrip())
+    return seq_len
+
+
+rule filter_gene_seq_match_seq:
+    """Create a set of filters for the blat results."""
+    input:
+        gene_seq_query="results/{species}/blast/{mode}/ref.chrY.{mode}.{gene}.fa",
+        gene_blast="results/{species}/blast/{mode}/ref.chrY.{mode}.{gene}.blast.txt",
+    output:
+        gene_filt_blast="results/{species}/blast/{mode}/ref.chrY.{mode}.{gene}.blast.filt.bed",
+    wildcard_constraints:
+        mode="ampliconic|control",
+    params:
+        min_percent_match=99,
+        min_alignment_length=lambda wildcards: 0.8
+        * get_fasta_length(
+            f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"
+        ),
+    shell:
+        """
+        cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\'  > {output.gene_filt_blast}
         """
 
 
@@ -196,17 +226,14 @@ rule collect_ampliconic_regions:
     """
     input:
         blast_results=lambda wildcards: expand(
-            "results/{{species}}/blast/ampliconic/ref.chrY.{gene}.blast.txt",
+            "results/{{species}}/blast/ampliconic/ref.chrY.ampliconic.{gene}.blast.filt.bed",
             gene=get_gene_list(config["species"][wildcards.species]["ampliconic_seq"]),
         ),
     output:
         gene_def_bed="results/{species}/ref.amplicone.chrY.gene_def.bed",
-    params:
-        min_percent_match=99,
-        min_alignment_length=100,
     shell:
         """
-        cat {input.blast_results} | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.gene_def_bed}
+        cat {input.blast_results} | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.gene_def_bed}
         """
 
 
@@ -217,19 +244,16 @@ rule collect_control_regions:
     """
     input:
         blast_results=lambda wildcards: expand(
-            "results/{{species}}/blast/control/ref.chrY.control.{gene}.blast.txt",
+            "results/{{species}}/blast/control/ref.chrY.control.{gene}.blast.filt.bed",
             gene=get_gene_list(config["species"][wildcards.species]["control_seq"]),
         ),
     output:
         control_def_raw_bed="results/{species}/ref.amplicone.chrY.control_def.raw.bed",
         control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
-    params:
-        min_percent_match=99,
-        min_alignment_length=100,
     shell:
         """
-        cat {input.blast_results} | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_raw_bed}
-        cat {input.blast_results} | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' | grep -v "#" | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", \"CONTROL\"}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", \"CONTROL\"}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_bed}
+        cat {input.blast_results} | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", $1}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", $1}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_raw_bed}
+        cat {input.blast_results} | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", \"CONTROL\"}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", \"CONTROL\"}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_bed}
         """
 
 
