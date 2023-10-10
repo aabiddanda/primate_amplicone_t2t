@@ -10,11 +10,11 @@ configfile: "config.yaml"
 # -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
-    # "mPonPyg2_orangutan_borneo",
-    # "mPonAbel_orangutan_sumatra",
+    "mPonPyg2_orangutan_borneo",
+    "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
-    # "mPanPan1_bonobo",
-    # "mGorGor1_gorilla",
+    "mPanPan1_bonobo",
+    "mGorGor1_gorilla",
 ]
 
 for species in real_species:
@@ -179,6 +179,7 @@ rule create_control_seq_match_seq:
         pblat {input.fasta} {output.gene_seq_query} {output.gene_blast} -t=dna -q=dna -threads={threads} -minIdentity={params.min_match} -out=blast9
         """
 
+
 def get_fasta_length(fasta_fp):
     """Get the length of the fasta sequences."""
     seq_len = 0.0
@@ -200,13 +201,13 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=lambda wildcards: 0.8
+        min_alignment_length=lambda wildcards: 0.10
         * get_fasta_length(
             f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"
         ),
     shell:
         """
-        cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\'  > {output.gene_filt_blast}
+        cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' > {output.gene_filt_blast}
         """
 
 
@@ -292,9 +293,18 @@ rule build_chrY_annotation:
         """
 
 
+rule reformat_annotation:
+    input:
+        chrY_anno="results/{species}/chrY_annotation.tab",
+    output:
+        chrY_rev_anno="results/{species}/chrY_annotation.rev.tab",
+    shell:
+        "awk 'NR == 1 {{print}} NR > 1 {{OFS=\"\t\"; print int($1), $2,$3, int($4)}}' {input.chrY_anno} > {output.chrY_rev_anno}"
+
+
 rule cram2bam:
     """Convert a CRAM to a BAM file.
-    NOTE: the bam file will only contain chrY now.
+    NOTE: the bam file will only contain chrY and 100 bp reads.
     """
     input:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
@@ -307,7 +317,7 @@ rule cram2bam:
     threads: 16
     shell:
         """
-        samtools view --fast --threads {threads} -b -T {input.test_fasta} {input.cram_file} chrY > {output.bam_file} 
+        samtools view --fast --threads {threads} -e 'length(seq)>=100' -b -T {input.test_fasta} {input.cram_file} chrY > {output.bam_file} 
         samtools index -@{threads} {output.bam_file}
         """
 
@@ -316,7 +326,7 @@ rule run_amplicone_count:
     """Run the amplicone count script and generate appropriate output."""
     input:
         bam="results/{species}/bam_files/{indiv}.bam",
-        chrY_anno="results/{species}/chrY_annotation.tab",
+        chrY_anno="results/{species}/chrY_annotation.rev.tab",
         gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
     output:
         "results/{species}/amplicone_results/{indiv}.Ampliconic_Summary.txt",
