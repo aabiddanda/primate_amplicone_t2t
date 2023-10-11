@@ -10,12 +10,12 @@ configfile: "config.yaml"
 # -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
-    "mPonPyg2_orangutan_borneo",
-    "mPonAbel_orangutan_sumatra",
+    # "mPonPyg2_orangutan_borneo",
+    # "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
-    "mPanPan1_bonobo",
-    "mGorGor1_gorilla",
-    "mHomSapChm13_homo_sapien"
+    # "mPanPan1_bonobo",
+    # "mGorGor1_gorilla",
+    # "mHomSapChm13_homo_sapien"
 ]
 
 for species in real_species:
@@ -324,7 +324,7 @@ rule cram2bam:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
             wildcards.indiv
         ],
-        test_fasta=lambda wildcards: config["species"][wildcards.species]["ref_fasta"],
+        test_fasta="results/{species}/ref.chrY.fa",
     output:
         bam_file="results/{species}/bam_files/{indiv}.bam",
         bai_file="results/{species}/bam_files/{indiv}.bam.bai",
