@@ -3,3 +3,4 @@ sandbox/
 data/
 nohup.out
 bin/
+*.ipynb_checkpoints/*
