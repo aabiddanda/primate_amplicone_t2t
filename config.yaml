@@ -90,18 +90,18 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/CHM13v2.0_XY_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 62460029
-    ampliconic_seq: "data/canonical_seq_amplicon/mHomSapChm13_homo_sapien.gene_def.tab"
+    ampliconic_seq: "data/canonical_seq_amplicon/chm13v2.chrY.protein_coding.ampliconic.tab"
     control_seq: "data/control_seq_amplicon/mHomSapChm13_homo_sapien.control.fa"
     ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/CHM13/chm13v2.0.fa"
     indivs:
       HG00448: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG00448.cram"
       HG01619: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01619.cram"
-      HG01621: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG1621.cram"
+      HG01621: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01621.cram"
       HG01708: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01708.cram"
       HG01771: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01771.cram"
       HG02070: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG02070.cram"
       HG02521: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG02521.cram"
-      HG02768: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG025768.cram"
+      HG02768: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG02768.cram"
       HG03120: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03120.cram"
       HG03122: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03122.cram"
       HG03246: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03246.cram"

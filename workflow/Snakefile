@@ -15,6 +15,7 @@ real_species = [
     "mPanTro3_chimp",
     "mPanPan1_bonobo",
     "mGorGor1_gorilla",
+    "mHomSapChm13_homo_sapien"
 ]
 
 for species in real_species:
@@ -257,26 +258,30 @@ rule collect_control_regions:
         cat {input.blast_results} | awk \'$9 < $10 {{OFS=\"\t\"; print $2,$9,$10,\"+\", \"CONTROL\"}} $10 < $9 {{OFS=\"\t\"; print $2,$10,$9,\"-\", \"CONTROL\"}}\' | bedtools sort | mergeBed -c 4,5 -o collapse,collapse > {output.control_def_bed}
         """
 
-if '.fa' in config["species"][wildcards.species]["ampliconic_seq"]:
-    rule create_full_gene_def_file:
-        """Helper rule that merges together the gene definition."""
-        input:
-            control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
-            gene_def_bed="results/{species}/ref.amplicone.chrY.gene_def.bed",
-        output:
-            gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
-        shell:
-            'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
-else:
-    rule create_full_gene_def_file:
-        """Helper rule that merges together the gene definition."""
-        input:
-            control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
-            gene_def_bed=lambda wildcards: config["species"][wildcards.species]["ampliconic_seq"],
-        output:
-            gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
-        shell:
-            'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
+
+rule create_full_gene_def_file:
+    """Helper rule that merges together the gene definition."""
+    input:
+        control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
+        gene_def_bed="results/{species}/ref.amplicone.chrY.gene_def.bed",
+    wildcard_constraints:
+        species="mGorGor1_gorilla|mPanPan1_bonobo|mPanTro3_chimp|mPonAbel_orangutan_sumatra|mPonPyg2_orangutan_borneo"
+    output:
+        gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
+    shell:
+        'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
+
+rule create_full_gene_def_file_hom_sap:
+    """Helper rule that merges together the gene definition."""
+    input:
+        control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
+        gene_def_bed=lambda wildcards: config["species"][wildcards.species]["ampliconic_seq"],
+    wildcard_constraints:
+        species="mHomSapChm13_homo_sapien"
+    output:
+        gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
+    shell:
+        'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
 
 rule build_chrY_annotation:
     """Build chrY annotation for AmpliCoNE.
