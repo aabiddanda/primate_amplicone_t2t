@@ -90,6 +90,7 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/CHM13v2.0_XY_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 62460029
+    ampliconic_seq: "data/canonical_seq_amplicon/mHomSapChm13_homo_sapien.gene_def.tab"
     control_seq: "data/control_seq_amplicon/mHomSapChm13_homo_sapien.control.fa"
     ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/CHM13/chm13v2.0.fa"
     indivs:
