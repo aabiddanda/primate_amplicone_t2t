@@ -202,7 +202,7 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=lambda wildcards: 0.10
+        min_alignment_length=lambda wildcards: 0.80
         * get_fasta_length(
             f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"
         ),
@@ -302,6 +302,8 @@ rule build_chrY_annotation:
         cd results/{wildcards.species}/
         cp -rf ../../../tools/AmpliCoNE-tool/bin/ .  
         sh ../../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i ref.chrY.fa -m ref.chrY.mappability.bed -r ref.repeatmasker.out -t ref.chrY.trf.bed -g ref.amplicone.chrY.gene_def.tab -o chrY_annotation.tab 
+        rm Sliding_window101bp_Reference_reads.fasta
+        rm *.bt2
         rm *.sam
         cd ../../
         """
