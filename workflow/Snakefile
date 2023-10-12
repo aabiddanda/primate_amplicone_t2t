@@ -10,12 +10,12 @@ configfile: "config.yaml"
 # -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
-    "mPonPyg2_orangutan_borneo",
-    "mPonAbel_orangutan_sumatra",
+    # "mPonPyg2_orangutan_borneo",
+    # "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
-    "mPanPan1_bonobo",
-    "mGorGor1_gorilla",
-    "mHomSapChm13_homo_sapien"
+    # "mPanPan1_bonobo",
+    # "mGorGor1_gorilla",
+    # "mHomSapChm13_homo_sapien"
 ]
 
 for species in real_species:
@@ -202,7 +202,7 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=lambda wildcards: 0.10
+        min_alignment_length=lambda wildcards: 0.80
         * get_fasta_length(
             f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"
         ),
@@ -302,6 +302,8 @@ rule build_chrY_annotation:
         cd results/{wildcards.species}/
         cp -rf ../../../tools/AmpliCoNE-tool/bin/ .  
         sh ../../../tools/AmpliCoNE-tool/AmpliCoNE-build.sh -c chrY -i ref.chrY.fa -m ref.chrY.mappability.bed -r ref.repeatmasker.out -t ref.chrY.trf.bed -g ref.amplicone.chrY.gene_def.tab -o chrY_annotation.tab 
+        rm Sliding_window101bp_Reference_reads.fasta
+        rm *.bt2
         rm *.sam
         cd ../../
         """
@@ -324,7 +326,7 @@ rule cram2bam:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
             wildcards.indiv
         ],
-        test_fasta=lambda wildcards: config["species"][wildcards.species]["ref_fasta"],
+        test_fasta="results/{species}/ref.chrY.fa",
     output:
         bam_file="results/{species}/bam_files/{indiv}.bam",
         bai_file="results/{species}/bam_files/{indiv}.bam.bai",
