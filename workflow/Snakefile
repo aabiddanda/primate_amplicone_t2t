@@ -376,8 +376,8 @@ rule run_amplicone_count:
 rule estimate_evo_params_ampliconic_cafe5_base:
     """Estimate ampliconic parameters in CAFE5 for gene-family evolution (base model)."""
     input:
-        cafe5="bin/CAFE5/cafe5",
-        phylotree="data/GreatApeY.noPAR.fasta.treefile",
+        cafe5="bin/CAFE5/bin/cafe5",
+        phylotree="data/GreatApeY.noGRCh38.noPAR.fasta.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
         cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
@@ -387,7 +387,7 @@ rule estimate_evo_params_ampliconic_cafe5_base:
     params:
         outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
     log:
-        "logs/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}.log",
+        "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
     shell:
         "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"
@@ -399,8 +399,8 @@ rule estimate_evo_params_ampliconic_cafe5_gamma:
     Performs estimation across multiple replicates as well.
     """
     input:
-        cafe5="bin/CAFE5/cafe5",
-        phylotree="data/GreatApeY.noPAR.fasta.treefile",
+        cafe5="bin/CAFE5/bin/cafe5",
+        phylotree="data/GreatApeY.noGRCh38.noPAR.fasta.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
         cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
@@ -410,7 +410,7 @@ rule estimate_evo_params_ampliconic_cafe5_gamma:
     params:
         outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
     log:
-        "logs/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}.log",
+        "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
     shell:
         "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"

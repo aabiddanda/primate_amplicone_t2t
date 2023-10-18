@@ -4,3 +4,4 @@ data/
 nohup.out
 bin/
 *.ipynb_checkpoints/*
+logs/
