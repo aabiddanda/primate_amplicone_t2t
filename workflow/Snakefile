@@ -28,6 +28,16 @@ for species in real_species:
 rule all:
     input:
         TARGETS,
+        expand(
+            "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
+            k=1,
+            rep=range(3),
+        ),
+        expand(
+            "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
+            k=[2, 3, 4],
+            rep=range(3),
+        ),
 
 
 rule download_fasta_fastaidx:
@@ -265,23 +275,27 @@ rule create_full_gene_def_file:
         control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
         gene_def_bed="results/{species}/ref.amplicone.chrY.gene_def.bed",
     wildcard_constraints:
-        species="mGorGor1_gorilla|mPanPan1_bonobo|mPanTro3_chimp|mPonAbel_orangutan_sumatra|mPonPyg2_orangutan_borneo"
+        species="mGorGor1_gorilla|mPanPan1_bonobo|mPanTro3_chimp|mPonAbel_orangutan_sumatra|mPonPyg2_orangutan_borneo",
     output:
         gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
     shell:
         'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
 
+
 rule create_full_gene_def_file_hom_sap:
     """Helper rule that merges together the gene definition."""
     input:
         control_def_bed="results/{species}/ref.amplicone.chrY.control_def.bed",
-        gene_def_bed=lambda wildcards: config["species"][wildcards.species]["ampliconic_seq"],
+        gene_def_bed=lambda wildcards: config["species"][wildcards.species][
+            "ampliconic_seq"
+        ],
     wildcard_constraints:
-        species="mHomSapChm13_homo_sapien"
+        species="mHomSapChm13_homo_sapien",
     output:
         gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
     shell:
         'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
+
 
 rule build_chrY_annotation:
     """Build chrY annotation for AmpliCoNE.
@@ -356,3 +370,47 @@ rule run_amplicone_count:
         """
         python ../tools/AmpliCoNE-tool/AmpliCoNE-count.py --GENE_DEF {input.gene_def} --ANNOTATION {input.chrY_anno} --BAM {input.bam} --CHR chrY --LENGTH {params.length} -o {params.outfix}
         """
+
+
+# ----------- Estimating Evolutionary Rates in CAFE for gene-family evolution ------------ #
+rule estimate_evo_params_ampliconic_cafe5_base:
+    """Estimate ampliconic parameters in CAFE5 for gene-family evolution (base model)."""
+    input:
+        cafe5="bin/CAFE5/cafe5",
+        phylotree="data/GreatApeY.noPAR.fasta.treefile",
+        gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
+    output:
+        cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
+    wildcard_constraints:
+        k="1",
+        rep="\d+",
+    params:
+        outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
+    log:
+        "logs/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}.log",
+    threads: 12
+    shell:
+        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"
+
+
+rule estimate_evo_params_ampliconic_cafe5_gamma:
+    """Estimate ampliconic parameters in CAFE5 for gene-family evolution.
+    
+    Performs estimation across multiple replicates as well.
+    """
+    input:
+        cafe5="bin/CAFE5/cafe5",
+        phylotree="data/GreatApeY.noPAR.fasta.treefile",
+        gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
+    output:
+        cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
+    wildcard_constraints:
+        k="[2-9]",
+        rep="\d+",
+    params:
+        outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
+    log:
+        "logs/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}.log",
+    threads: 12
+    shell:
+        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"
