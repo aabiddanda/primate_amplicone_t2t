@@ -108,13 +108,3 @@ species:
       HG03248: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03248.cram"
       HG03307: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03307.cram"
       HG03308: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG03308.cram"
-
-#  mSymSyn1_siamang gibbon:
-    #fasta: "https://genomeark.s3.amazonaws.com/species/Symphalangus_syndactylus/mSymSyn1/assembly_verkko_1.1-hic-freeze/mSymSyn1.chrXY.20221111.fasta.gz"
-    #faidx: "https://genomeark.s3.amazonaws.com/species/Symphalangus_syndactylus/mSymSyn1/assembly_verkko_1.1-hic-freeze/mSymSyn1.chrXY.20221111.fasta.gz.gzi"
-    #repeatMasker: "data/repeat_masker_t2t_primates/Siamang_FinalAnnotations_June2023_v2.sort.out"
-    #readsize: 101
-#    length: 
-    #ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Siamang/mSymSyn1.fa"
-
-

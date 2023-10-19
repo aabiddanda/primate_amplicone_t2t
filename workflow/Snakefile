@@ -14,7 +14,7 @@ real_species = [
     # "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
     # "mPanPan1_bonobo",
-    # "mGorGor1_gorilla",
+    "mGorGor1_gorilla",
     # "mHomSapChm13_homo_sapien"
 ]
 
@@ -31,12 +31,12 @@ rule all:
         expand(
             "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
             k=1,
-            rep=range(3),
+            rep=range(5),
         ),
         expand(
             "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
             k=[2, 3, 4],
-            rep=range(3),
+            rep=range(5),
         ),
 
 
@@ -212,10 +212,7 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=lambda wildcards: 0.80
-        * get_fasta_length(
-            f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"
-        ),
+        min_alignment_length=100,
     shell:
         """
         cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' > {output.gene_filt_blast}
@@ -323,9 +320,21 @@ rule build_chrY_annotation:
         """
 
 
+rule rescale_to_raw_anno:
+    """Rescale to the raw annotations for sites that are in our core regions of interest."""
+    input:
+        gene_def="results/{species}/ref.amplicone.chrY.gene_def.tab",
+        chrY_anno="results/{species}/chrY_annotation.tab",
+        mappability_bed="results/{species}/ref.chrY.mappability.bed",
+    output:
+        chrY_rescaled_anno="results/{species}/chrY_annotation.rescaled.tab",
+    script:
+        "scripts/rescale_mappability.py"
+
+
 rule reformat_annotation:
     input:
-        chrY_anno="results/{species}/chrY_annotation.tab",
+        chrY_anno="results/{species}/chrY_annotation.rescaled.tab",
     output:
         chrY_rev_anno="results/{species}/chrY_annotation.rev.tab",
     shell:
@@ -377,7 +386,7 @@ rule estimate_evo_params_ampliconic_cafe5_base:
     """Estimate ampliconic parameters in CAFE5 for gene-family evolution (base model)."""
     input:
         cafe5="bin/CAFE5/bin/cafe5",
-        phylotree="data/GreatApeY.noGRCh38.noPAR.fasta.treefile",
+        phylotree="data/treefiles/GreatApeY.noGRCh38.noPAR.fasta.scaled.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
         cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
@@ -390,7 +399,7 @@ rule estimate_evo_params_ampliconic_cafe5_base:
         "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
     shell:
-        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"
+        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads} 2>&1 | tee {log} "
 
 
 rule estimate_evo_params_ampliconic_cafe5_gamma:
@@ -400,7 +409,7 @@ rule estimate_evo_params_ampliconic_cafe5_gamma:
     """
     input:
         cafe5="bin/CAFE5/bin/cafe5",
-        phylotree="data/GreatApeY.noGRCh38.noPAR.fasta.treefile",
+        phylotree="data/treefiles/GreatApeY.noGRCh38.noPAR.fasta.scaled.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
         cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
@@ -413,4 +422,4 @@ rule estimate_evo_params_ampliconic_cafe5_gamma:
         "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
     shell:
-        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads}"
+        "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads} 2>&1 | tee {log}"
