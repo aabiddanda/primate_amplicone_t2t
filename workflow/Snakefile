@@ -10,10 +10,10 @@ configfile: "config.yaml"
 # -------- Define all of the assorted targets -------- #
 TARGETS = []
 real_species = [
-    # "mPonPyg2_orangutan_borneo",
-    # "mPonAbel_orangutan_sumatra",
+    "mPonPyg2_orangutan_borneo",
+    "mPonAbel_orangutan_sumatra",
     "mPanTro3_chimp",
-    # "mPanPan1_bonobo",
+    "mPanPan1_bonobo",
     "mGorGor1_gorilla",
     # "mHomSapChm13_homo_sapien"
 ]
@@ -40,7 +40,7 @@ rule all:
         ),
 
 
-rule download_fasta_fastaidx:
+rule download_fasta_fastaidx_nonhuman:
     """Download fasta file from remote repositories. """
     output:
         fasta="results/{species}/ref.fasta.gz",
@@ -48,6 +48,8 @@ rule download_fasta_fastaidx:
     params:
         fasta=lambda wildcards: config["species"][wildcards.species]["fasta"],
         faidx=lambda wildcards: config["species"][wildcards.species]["faidx"],
+    wildcard_constraints:
+        species="mGorGor1_gorilla|mPanPan1_bonobo|mPanTro3_chimp|mPonAbel_orangutan_sumatra|mPonPyg2_orangutan_borneo"
     resources:
         time="0:30:00",
         mem_mb="5G",
@@ -57,6 +59,25 @@ rule download_fasta_fastaidx:
         wget {params.faidx} -O {output.faidx} 
         """
 
+rule download_fasta_fastaidx_human:
+    """Download fasta file from remote repositories. """
+    output:
+        fasta="results/{species}/ref.fasta.gz",
+        faidx="results/{species}/ref.fasta.gzi",
+    params:
+        fasta=lambda wildcards: config["species"][wildcards.species]["fasta"],
+        faidx=lambda wildcards: config["species"][wildcards.species]["faidx"],
+    wildcard_constraints:
+        species="mHomSapChm13_homo_sapien"
+    resources:
+        time="0:30:00",
+        mem_mb="5G",
+    shell:
+        """
+        gzip -c {params.fasta} > {output.fasta}
+        cp {params.faidx} {output.faidx} 
+        samtools faidx {output.fasta}
+        """
 
 rule ref_specific_mappability:
     """Generate reference-specific mappability metrics for AmpliCONE."""
@@ -212,7 +233,7 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=100,
+        min_alignment_length=lambda wildcards: 0.80 * get_fasta_length(f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"),
     shell:
         """
         cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' > {output.gene_filt_blast}
@@ -328,6 +349,7 @@ rule rescale_to_raw_anno:
         mappability_bed="results/{species}/ref.chrY.mappability.bed",
     output:
         chrY_rescaled_anno="results/{species}/chrY_annotation.rescaled.tab",
+    threads: 4
     script:
         "scripts/rescale_mappability.py"
 

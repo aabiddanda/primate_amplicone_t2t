@@ -25,11 +25,12 @@ def set_mappability(start, end, anno_df, raw_mappability_df):
     return fix_df
 
 if __name__ == '__main__':
-    anno_df = pl.read_csv(snakemake.input['chrY_rescaled_anno'], separator='\t')
-    gene_df = pl.read_csv(snakemake.input['gene_def'], separator='\t')
-    mappability_df = pl.read_csv(snakemake.input['mappability_bed'], separator='\t')
+    anno_df = pl.read_csv(snakemake.input['chrY_anno'], n_threads=4, separator='\t')
+    gene_df = pl.read_csv(snakemake.input['gene_def'], n_threads=4, separator='\t')
+    mappability_df = pl.read_csv(snakemake.input['mappability_bed'], new_columns=['CHROM', 'START', 'END', 'Mappability'], n_threads=4, separator='\t')
+    print(mappability_df.head())
     collection_dfs =  []
-    for s,e,t,l in zip(gene_df['START'].to_numpy(), gene_df['END'].to_numpy(), gene_df['TYPE'].to_numpy()):
+    for s,e,t in zip(gene_df['START'].to_numpy(), gene_df['END'].to_numpy(), gene_df['TYPE'].to_numpy()):
         print(s,e,t)
         fix_df = set_mappability(s,e, anno_df, mappability_df)
         collection_dfs.append(fix_df)

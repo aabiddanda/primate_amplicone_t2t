@@ -10,7 +10,6 @@ species:
     length: 65269191
     ampliconic_seq: "data/canonical_seq_amplicon/mGorGor1_gorilla.amplicon.fa"
     control_seq: "data/control_seq_amplicon/mGorGor1_gorilla.control.fa"
-    ref_fasta: "/scratch16/rmccoy22/abiddan1/t2t_primates_analyses/reference_data/ref/Gorilla/mGorGor1.fa"
     indivs:
       Abe: "/data/mschatz1/qiuhuili/project/primate/files/cram/Abe/T2T.cram"
       Azizi: "/data/mschatz1/qiuhuili/project/primate/files/cram/Azizi/T2T.cram"
@@ -26,7 +25,6 @@ species:
     length: 46925665
     ampliconic_seq: "data/canonical_seq_amplicon/mPanPan1_bonobo.amplicon.fa"
     control_seq: "data/control_seq_amplicon/mPanPan1_bonobo.control.fa"
-    ref_fasta: "/scratch16/rmccoy22/abiddan1/t2t_primates_analyses/reference_data/ref/Bonobo/mPanPan1.fa"
     indivs:
       Bono: "/data/mschatz1/qiuhuili/project/primate/files/cram/Bono/T2T.cram"
       Desmond: "/data/mschatz1/qiuhuili/project/primate/files/cram/Desmond/T2T.cram"
@@ -38,7 +36,6 @@ species:
     length: 36445859
     ampliconic_seq: "data/canonical_seq_amplicon/mPanTro3_chimp.amplicon.fa"
     control_seq: "data/control_seq_amplicon/mPanTro3_chimp.control.fa"
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/chimpanzee/mPanTro3.fa"
     indivs:
       Akwaya-Jean: "/data/mschatz1/qiuhuili/project/primate/files/cram/Akwaya-Jean/T2T.cram"
       Alfred: "/data/mschatz1/qiuhuili/project/primate/files/cram/Alfred/T2T.cram"
@@ -68,7 +65,6 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Sumatran_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 67808326
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Sumatran/mPonAbe1.fa"
     ampliconic_seq: "data/canonical_seq_amplicon/mPonAbel_orangutan_sumatra.amplicon.fa"
     control_seq: "data/control_seq_amplicon/mPonAbel_orangutan_sumatra.control.fa"
     indivs:
@@ -79,20 +75,18 @@ species:
     repeatMasker: "data/repeat_masker_t2t_primates/Bornean_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 49349692
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/Bornean/mPonPyg2.fa"
     ampliconic_seq: "data/canonical_seq_amplicon/mPonPyg2_orangutan_borneo.amplicon.fa"
     control_seq: "data/control_seq_amplicon/mPonPyg2_orangutan_borneo.control.fa"
     indivs:
       Napoleon: "/data/mschatz1/qiuhuili/project/primate/files/cram/Napoleon/T2T.cram"
   mHomSapChm13_homo_sapien:
-    fasta: "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz"
-    faidx: "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/analysis_set/chm13v2.0.fa.gz.gzi"
+    fasta: "/scratch4/rmccoy22/sharedData/genomeAssemblies/human/CHM13v2.0/chm13v2.0.XY.fasta"
+    faidx: "/scratch4/rmccoy22/sharedData/genomeAssemblies/human/CHM13v2.0/chm13v2.0.XY.fasta.fai"
     repeatMasker: "data/repeat_masker_t2t_primates/CHM13v2.0_XY_FinalAnnotations_June2023_v2.sort.out"
     readsize: 101
     length: 62460029
     ampliconic_seq: "data/canonical_seq_amplicon/chm13v2.chrY.protein_coding.ampliconic.tab"
     control_seq: "data/control_seq_amplicon/mHomSapChm13_homo_sapien.control.fa"
-    ref_fasta: "/home/abiddan1/scratch16/t2t_primates_analyses/reference_data/ref/CHM13/chm13v2.0.fa"
     indivs:
       HG00448: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG00448.cram"
       HG01619: "/scratch4/rmccoy22/sharedData/populationDatasets/1KGP_NYGC/CHM13v2.0_crams/HG01619.cram"
