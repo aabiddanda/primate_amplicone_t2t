@@ -15,7 +15,7 @@ real_species = [
     "mPanTro3_chimp",
     "mPanPan1_bonobo",
     "mGorGor1_gorilla",
-    # "mHomSapChm13_homo_sapien"
+    "mHomSapChm13_homo_sapien"
 ]
 
 for species in real_species:
@@ -62,6 +62,7 @@ rule download_fasta_fastaidx_nonhuman:
 rule download_fasta_fastaidx_human:
     """Download fasta file from remote repositories. """
     output:
+        raw_fasta = "results/{species}/ref.fasta",
         fasta="results/{species}/ref.fasta.gz",
         faidx="results/{species}/ref.fasta.gzi",
     params:
@@ -74,7 +75,8 @@ rule download_fasta_fastaidx_human:
         mem_mb="5G",
     shell:
         """
-        gzip -c {params.fasta} > {output.fasta}
+        cp {params.fasta} {output.raw_fasta}
+        bgzip -c {params.fasta} > {output.fasta}
         cp {params.faidx} {output.faidx} 
         samtools faidx {output.fasta}
         """
@@ -233,7 +235,8 @@ rule filter_gene_seq_match_seq:
         mode="ampliconic|control",
     params:
         min_percent_match=99,
-        min_alignment_length=lambda wildcards: 0.80 * get_fasta_length(f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"),
+        # min_alignment_length=lambda wildcards: 0.80 * get_fasta_length(f"results/{wildcards.species}/blast/{wildcards.mode}/ref.chrY.{wildcards.mode}.{wildcards.gene}.fa"),
+        min_alignment_length=100
     shell:
         """
         cat {input.gene_blast} | grep -v "#" | awk \'$3 > {params.min_percent_match} && $4 >= {params.min_alignment_length}\' > {output.gene_filt_blast}
@@ -312,7 +315,10 @@ rule create_full_gene_def_file_hom_sap:
     output:
         gene_def_tab="results/{species}/ref.amplicone.chrY.gene_def.tab",
     shell:
-        'cat {input.gene_def_bed} {input.control_def_bed} | awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $2,$3,$5}} \' > {output.gene_def_tab}'
+        """
+        awk \'BEGIN{{print "START\tEND\tTYPE"}}; {{OFS="\t";print $1,$2,$3}} \' {input.gene_def_bed} > {output.gene_def_tab}
+        awk \'{{OFS="\t"; print $2,$3,$5}}\' {input.control_def_bed} >> {output.gene_def_tab}
+        """
 
 
 rule build_chrY_annotation:
@@ -371,7 +377,7 @@ rule cram2bam:
         cram_file=lambda wildcards: config["species"][wildcards.species]["indivs"][
             wildcards.indiv
         ],
-        test_fasta="results/{species}/ref.chrY.fa",
+        test_fasta="results/{species}/ref.fasta.gz",
     output:
         bam_file="results/{species}/bam_files/{indiv}.bam",
         bai_file="results/{species}/bam_files/{indiv}.bam.bai",
