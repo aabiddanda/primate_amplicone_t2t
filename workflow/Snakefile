@@ -27,7 +27,7 @@ for species in real_species:
 
 rule all:
     input:
-        TARGETS,
+        # TARGETS,
         expand(
             "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
             k=1,
