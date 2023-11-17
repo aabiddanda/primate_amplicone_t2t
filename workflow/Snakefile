@@ -33,11 +33,11 @@ rule all:
             k=1,
             rep=range(5),
         ),
-        expand(
-            "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
-            k=[2, 3],
-            rep=range(5),
-        ),
+        # expand(
+        #     "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
+        #     k=[2, 3],
+        #     rep=range(5),
+        # ),
 
 
 rule download_fasta_fastaidx_nonhuman:
