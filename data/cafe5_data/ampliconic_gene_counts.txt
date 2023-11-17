@@ -1,6 +1,6 @@
 Desc	FamilyID	Pan_paniscus.mPanPan1_Y	Pan_troglodytes.mPanTro3_Y	Gorilla_gorilla.mGorGor1_Y	Pongo_pygmaeus.mPonPyg2_Y	Pongo_abelii.nPonAbe1_Y	Symphalangus_syndactylus.mSymSyn1_Y	chm13.chm13_Y
 Testis-Specific-Basic-Protein-Y	BPY	2	2	2	0	0	0	3
-Testis-Specific-Chromodomain-Protein-Y	CDY	3	5	1	13	22	5	4	
+Testis-Specific-Chromodomain-Protein-Y	CDY	3	5	4	13	22	5	4	
 Deleted-In-Azoospermia	DAZ	2	4	2	10	8	2	4
 Heat-Shock-Transcription-Factor-Y-Linked	HSFY	0	0	5	4	5	5	2
 Testis-Specific-PTP-BL-Related-Y-PTPN13-Like-Y-Linked	PRY	0	0	2	1	4	0	2
