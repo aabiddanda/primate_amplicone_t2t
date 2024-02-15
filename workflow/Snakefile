@@ -29,7 +29,7 @@ rule all:
     input:
         # TARGETS,
         expand(
-            "results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
+            "results/cafe5_t2t_primates_chrY/est_k{k}_rep{rep}/Base_report.cafe",
             k=1,
             rep=range(5),
         ),
@@ -410,19 +410,19 @@ rule run_amplicone_count:
 
 
 # ----------- Estimating Evolutionary Rates in CAFE for gene-family evolution ------------ #
-rule estimate_evo_params_ampliconic_cafe5_base:
+rule estimate_evo_params_ampliconic_cafe5_base_chrY:
     """Estimate ampliconic parameters in CAFE5 for gene-family evolution (base model)."""
     input:
         cafe5="bin/CAFE5/bin/cafe5",
         phylotree="data/treefiles/GreatApeY.noGRCh38.noPAR.fasta.scaled_muts.v2.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
-        cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Base_report.cafe",
+        cafe_report="results/cafe5_t2t_primates_chrY/est_k{k}_rep{rep}/Base_report.cafe",
     wildcard_constraints:
         k="1",
         rep="\d+",
     params:
-        outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
+        outdir=lambda wildcards: f"results/cafe5_t2t_primates_chrY/est_k{wildcards.k}_rep{wildcards.rep}/",
     log:
         "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
@@ -430,7 +430,7 @@ rule estimate_evo_params_ampliconic_cafe5_base:
         "./{input.cafe5} -i {input.gene_table} -t {input.phylotree} -o {params.outdir} -k {wildcards.k} -c {threads} 2>&1 | tee {log} "
 
 
-rule estimate_evo_params_ampliconic_cafe5_gamma:
+rule estimate_evo_params_ampliconic_cafe5_gamma_chrY:
     """Estimate ampliconic parameters in CAFE5 for gene-family evolution.
     
     Performs estimation across multiple replicates as well.
@@ -440,12 +440,12 @@ rule estimate_evo_params_ampliconic_cafe5_gamma:
         phylotree="data/treefiles/GreatApeY.noGRCh38.noPAR.fasta.scaled_muts.v2.treefile",
         gene_table="data/cafe5_data/ampliconic_gene_counts.txt",
     output:
-        cafe_report="results/cafe5_t2t_primates/est_k{k}_rep{rep}/Gamma_report.cafe",
+        cafe_report="results/cafe5_t2t_primates_chrY/est_k{k}_rep{rep}/Gamma_report.cafe",
     wildcard_constraints:
         k="[2-9]",
         rep="\d+",
     params:
-        outdir=lambda wildcards: f"results/cafe5_t2t_primates/est_k{wildcards.k}_rep{wildcards.rep}/",
+        outdir=lambda wildcards: f"results/cafe5_t2t_primates_chrY/est_k{wildcards.k}_rep{wildcards.rep}/",
     log:
         "logs/cafe5_t2t_primates/est_k{k}_rep{rep}.log",
     threads: 12
