@@ -1,0 +1,4 @@
+Desc	FamilyID	Pan_paniscus.mPanPan1_X	Pan_troglodytes.mPanTro3_X	Gorilla_gorilla.mGorGor1_X	Pongo_pygmaeus.mPonPyg2_X	Pongo_abelii.nPonAbe1_X	Symphalangus_syndactylus.mSymSyn1_X	chm13.chm13_X
+Sperm-Protein-Associated-Nucleus-On-X	SPANX	33	11	17	9	11	7	10
+Melanoma-Associated-Antigen	MAGE	37	29	28	32	32	25	27
+G-Antigen-Gene	GAGE	32	16	20	15	18	17	26
